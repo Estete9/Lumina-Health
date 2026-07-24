@@ -1,16 +1,35 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 import { ClinicalNote } from '@/lib/types';
-import { FileText, Sparkles, CheckSquare, AlertCircle, Calendar } from 'lucide-react';
+import { FileText, Sparkles, CheckSquare, AlertCircle, Calendar, Plus } from 'lucide-react';
+import { NewClinicalNoteModal } from '@/components/notes/NewClinicalNoteModal';
 
 interface PatientNotesHistoryProps {
   notes: ClinicalNote[];
+  patientId: string;
 }
 
-export function PatientNotesHistory({ notes }: PatientNotesHistoryProps) {
+export function PatientNotesHistory({ notes, patientId }: PatientNotesHistoryProps) {
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+
   if (notes.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm">
-        <p className="text-slate-500 text-sm">No clinical notes recorded yet for this patient chart.</p>
+      <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm relative">
+        <button
+          onClick={() => setIsNoteModalOpen(true)}
+          className="absolute top-4 right-4 flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-700 shadow-sm transition-colors"
+        >
+          <Plus className="h-4 w-4" />
+          Add Note
+        </button>
+        <p className="text-slate-500 text-sm mt-4">No clinical notes recorded yet for this patient chart.</p>
+        <NewClinicalNoteModal
+          isOpen={isNoteModalOpen}
+          onClose={() => setIsNoteModalOpen(false)}
+          onSuccess={() => setIsNoteModalOpen(false)}
+          initialPatientId={patientId}
+        />
       </div>
     );
   }
@@ -22,9 +41,18 @@ export function PatientNotesHistory({ notes }: PatientNotesHistoryProps) {
           <h2 className="text-base font-bold text-slate-900">Clinical Progress Notes & Timeline</h2>
           <p className="text-xs text-slate-500">Discoveries, daily actions, and clinical observations</p>
         </div>
-        <span className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
-          {notes.length} Total Notes
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
+            {notes.length} Total Notes
+          </span>
+          <button
+            onClick={() => setIsNoteModalOpen(true)}
+            className="flex items-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-teal-700 shadow-sm transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            Add Note
+          </button>
+        </div>
       </div>
 
       <div className="space-y-6">
@@ -128,6 +156,12 @@ export function PatientNotesHistory({ notes }: PatientNotesHistoryProps) {
           );
         })}
       </div>
+      <NewClinicalNoteModal
+        isOpen={isNoteModalOpen}
+        onClose={() => setIsNoteModalOpen(false)}
+        onSuccess={() => setIsNoteModalOpen(false)}
+        initialPatientId={patientId}
+      />
     </div>
   );
 }

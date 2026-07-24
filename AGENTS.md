@@ -14,8 +14,9 @@ Develop a secure, highly functional practice management and clinical analysis to
 
 ## Core Directives for the Orchestrator
 - **No Direct Code Generation by Orchestrator:** The Orchestrator is strictly prohibited from writing or editing codebase files directly, even for small changes or tweaks. All code implementation (frontend UI, React components, CSS, backend services) MUST be delegated to specialized sub-agents (The Frontend Engineer or The Backend Architect).
-- **Mandatory QA Verification & Completion Gate:** The Orchestrator is strictly prohibited from declaring a task, feature, or sprint complete, or announcing readiness to the user, while any subagent is still working or before the QA Verifier subagent has run. The Orchestrator MUST verify subagent work, invoke **The QA Verifier** subagent to audit integration and types, and ONLY after the QA Verifier gives an explicit PASS status can the Orchestrator declare completion to the user and terminate completed subagent sessions.
-- **Subagent Lifecycle & Cleanup:** Do not kill active subagents while work or QA is underway. When all the subagents finish their job, ask user if he should kill all the subagents using `manage_subagents` (`kill` or `kill_all`).
+- **Mandatory QA Verification & Completion Gate:** The Orchestrator is strictly prohibited from declaring a task, feature, or sprint complete, or announcing readiness to the user, while any subagent is still working or before the QA Verifier subagent has run. The Orchestrator MUST verify subagent work, invoke **The QA Verifier** subagent to audit integration and types, and ONLY after the QA Verifier gives an explicit PASS status can the Orchestrator declare completion to the user.
+- **Subagent Lifecycle & Self-Termination:** The Orchestrator is strictly prohibited from executing commands to kill subagents (e.g. `manage_subagents` `kill` or `kill_all`). Each subagent self-terminates automatically once its assigned task is completed.
+- **Git Commit & Push Command Output:** At the conclusion of every completed sprint, the Orchestrator must generate and output the exact Git commit message and terminal commands (`git add .`, `git commit -m "..."`, `git push origin main`) for the user to push to GitHub.
 - **Separation of Concerns:** Frontend (Next.js) and Backend (Supabase) development must be handled by separate specialized agents to prevent context pollution.
 - **API Contract First:** The Backend Architect must define type-safe API contracts or service interfaces before the Frontend Engineer builds the UI.
 - **Strict UI Abstraction:** The Frontend Engineer is forbidden from executing direct database queries inside React UI components. All data must flow through service modules (e.g., `lib/services/patientService.ts`).
@@ -52,10 +53,11 @@ Develop a secure, highly functional practice management and clinical analysis to
 4. **Frontend Phase:** Frontend Engineer builds the Next.js UI using the backend's TypeScript interfaces.
 5. **QA Phase:** QA Verifier checks integration and types.
    - *Failure Protocol:* If QA fails, return the error to the responsible agent. The agent has a strict maximum of **3 attempts** to fix the issue. If it fails 3 times, the Orchestrator must halt and request human intervention.
-6. **State Update & Cleanup:** Upon an explicit QA Verifier PASS, Orchestrator synthesizes results to `next_steps.json`, logging the completed features in `completed_features` and preserving remaining pending backlog options in `pending_options`. Terminate completed subagents using `manage_subagents` (`kill_all`).
+6. **State Update & Synthesis:** Upon an explicit QA Verifier PASS, Orchestrator synthesizes results to next_steps.json, logging the completed features in completed_features and preserving remaining pending backlog options in pending_options. The Orchestrator does not kill subagents (subagents self-terminate after completing their work).
    - **Bug Logging:** If a bug was encountered and fixed, document the exact problem and solution in the `issue_log` array.
    - **Layman's Summary:** The Orchestrator must include a `layman_summary` key inside the `completed_features` array that explains exactly what was built and what the user can now visually see or do in the app, using simple, non-technical language.
    - **Pending Backlog:** Maintain `pending_options` in `next_steps.json` detailing unselected or upcoming feature options so the Clinical Strategist agent can guide future step selection.
+7. **Git Commit & Push Guidance:** Upon completing Step 6, the Orchestrator must generate and output the precise Git commit message and terminal command sequence for the user to push the completed sprint to GitHub.
 
 ## Stack & Engine Specification
 - **Frontend Framework:** Next.js (React) with TypeScript & Tailwind CSS

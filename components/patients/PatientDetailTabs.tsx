@@ -105,7 +105,7 @@ export function PatientDetailTabs({ patient, appointments, notes }: PatientDetai
             </div>
 
             {/* Recent Notes Preview */}
-            <PatientNotesHistory notes={notes} />
+            <PatientNotesHistory notes={notes} patientId={patient.id} />
           </div>
 
           {/* Sidebar Column: Appointments */}
@@ -116,7 +116,7 @@ export function PatientDetailTabs({ patient, appointments, notes }: PatientDetai
       )}
 
       {activeTab === 'notes' && (
-        <PatientNotesHistory notes={notes} />
+        <PatientNotesHistory notes={notes} patientId={patient.id} />
       )}
 
       {activeTab === 'appointments' && (

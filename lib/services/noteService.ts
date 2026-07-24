@@ -87,3 +87,29 @@ export async function createNote(input: CreateNoteInput, practitionerId: string 
     return handleServiceResponse<ClinicalNote>(newNote, null);
   }
 }
+
+export async function getAllNotes(): Promise<ServiceResponse<ClinicalNote[]>> {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return { data: inMemoryNotes, error: null };
+  }
+
+  try {
+    const supabase = await createClient();
+    if (!supabase) {
+      return { data: inMemoryNotes, error: null };
+    }
+
+    const { data, error } = await supabase
+      .from('clinical_notes')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
+    }
+
+    return handleServiceResponse<ClinicalNote[]>(data as ClinicalNote[], null);
+  } catch (error) {
+    return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, error);
+  }
+}
