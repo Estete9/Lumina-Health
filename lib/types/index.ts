@@ -106,3 +106,13 @@ export interface PractitionerDashboardStats {
   recentAppointments: Appointment[];
   recentPatients: Patient[];
 }
+
+export interface SearchResultItem {
+  id: string;
+  type: 'patient' | 'note' | 'appointment';
+  title: string;
+  subtitle: string;
+  url: string;
+  badge?: string;
+}
+

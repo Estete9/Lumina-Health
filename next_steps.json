@@ -35,19 +35,26 @@
             "scope": "Created components/notes/NewClinicalNoteModal.tsx, updated Header.tsx and PatientNotesHistory.tsx, and integrated createNote() and getAllNotes() in lib/services/noteService.ts. Enables structured clinical note logging with patient selection, session date picker, discoveries tag pills (@CBT-Insight), assigned client homework items list adder, and raw session summary notes.",
             "completed_at": "2026-07-24",
             "layman_summary": "You can now add structured session notes from anywhere in the app! Clicking '+ Note' in the top header or '+ Add Note' in a patient's chart opens a quick pop-up window where you can select a patient, tag key clinical findings (like CBT insights or anxiety triggers), assign client homework/daily action tasks, and save session summaries directly to their clinical record."
+        },
+        {
+            "sprint": "Sprint 6",
+            "title": "Global Header Real-Time Search & Quick Actions Hub",
+            "scope": "Created components/layout/GlobalSearchBar.tsx, updated Header.tsx, created lib/services/searchService.ts, and added SearchResultItem DTO in lib/types/index.ts. Enables live real-time multi-resource practice search across Patients, Clinical Notes, and Appointments with debounced queries, categorized icons/badges, click-outside dismissal, Esc shortcut, and instant navigation.",
+            "completed_at": "2026-07-24",
+            "layman_summary": "You now have a powerful live search bar right in the top navigation header! As you type a patient name, clinical tag (like @CBT-Insight), or session date, a floating menu instantly displays categorized search results across your patients, session notes, and calendar appointments, letting you jump directly to any record with one click."
         }
     ],
     "proposed_features": [
         {
-            "id": "PRP-01",
-            "title": "Global Header Real-Time Search & Quick Actions Hub",
-            "scope": "Upgrades the top navigation header with active real-time multi-resource search across patients, clinical notes, and scheduled sessions simultaneously, alongside quick action buttons for common tasks.",
-            "phase": "Phase 1 - MVP"
-        },
-        {
             "id": "PRP-02",
             "title": "Clinical Note Editing & Management Module",
             "scope": "Extends the clinical notes system to allow practitioners to edit, amend, and delete existing session notes, ensuring clinical records can be corrected and updated.",
+            "phase": "Phase 1 - MVP"
+        },
+        {
+            "id": "PRP-03",
+            "title": "Patient Record Archive & Status Lifecycle Management",
+            "scope": "Adds controls to change patient statuses (Active, Inactive, Completed Therapy, Archived) with filtered roster views.",
             "phase": "Phase 1 - MVP"
         }
     ],
