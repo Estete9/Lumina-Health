@@ -1,0 +1,89 @@
+{
+    "current_phase": "Phase 1 - MVP",
+    "completed_features": [
+        {
+            "sprint": "Sprint 1",
+            "title": "Project Foundation & Practitioner Navigation Shell",
+            "scope": "Initialized Next.js 14 App Router project with TypeScript, Tailwind CSS, Lucide icons, and Supabase SSR setup. Created domain types, database migration SQL with RLS policies, patient and dashboard services, layout components (Sidebar, Header), practitioner dashboard page, and patient roster page with search and status filtering.",
+            "completed_at": "2026-07-22",
+            "layman_summary": "We set up the core building blocks of Lumina Health! You can now launch the app, see a clean side navigation menu and top header, view a main Practitioner Dashboard displaying your daily statistics and scheduled appointments, and navigate to an active Patient Roster page with search and status filtering."
+        },
+        {
+            "sprint": "Sprint 2",
+            "title": "Interactive Session Scheduler & Calendar View",
+            "scope": "Created /calendar page route, CalendarView component, NewAppointmentModal booking form, and appointmentService.ts backend module with getAppointments(), createAppointment(), and updateAppointmentStatus() handlers.",
+            "completed_at": "2026-07-22",
+            "layman_summary": "You now have a dedicated Calendar page! You can visually view your upcoming therapy appointments, filter sessions by status (Scheduled, Completed, Cancelled), book new client sessions using a pop-up scheduling window, and mark completed sessions with a single click."
+        },
+        {
+            "sprint": "Sprint 3",
+            "title": "Comprehensive Patient Detail Profile & Clinical History View",
+            "scope": "Created dynamic /patients/[id] route, PatientProfileHeader, PatientAppointmentHistory, PatientNotesHistory, PatientDetailTabs components, noteService.ts, and integrated getPatientById(), getAppointmentsByPatientId(), and getNotesByPatientId() service handlers.",
+            "completed_at": "2026-07-23",
+            "layman_summary": "You can now click on any patient from the Patient Roster to open their dedicated Clinical Profile page! You will see their full demographic details, primary ailment focus, contact information, a complete timeline of structured past session notes (with clinical discoveries and assigned daily actions), and their full appointment history."
+        },
+        {
+            "sprint": "Sprint 4",
+            "title": "Add New Patient Registration & Patient Roster Management",
+            "scope": "Created AddPatientModal.tsx, PatientRosterView.tsx, CreatePatientInput interface in lib/types/index.ts, and implemented createPatient() and updatePatient() handlers in patientService.ts.",
+            "completed_at": "2026-07-23",
+            "layman_summary": "You can now add new patients directly to your practice roster! Clicking the '+ Add Patient' button opens a clean registration window where you can enter their contact info, date of birth, gender, status, primary diagnosis, and initial intake notes."
+        }
+    ],
+    "pending_options": [
+        {
+            "id": "PND-01",
+            "title": "Structured Clinical Note Creation Modal & Quick Entry Tool",
+            "scope": "Pop-up modal form (NewClinicalNoteModal.tsx) triggered from global header, patient profile, or calendar. Allows psychologists to log structured entries (Discoveries tags, Assigned Daily Actions list, Ailments noted, and Raw Notes) linked to a specific patient and session. Connects to noteService.ts for persistence.",
+            "phase": "Phase 1 - MVP",
+            "status": "Backlog (Sprint 4 Option 1)"
+        },
+        {
+            "id": "PND-02",
+            "title": "Global Real-Time Patient & Notes Search Bar",
+            "scope": "Enable active search functionality in top Header component to quickly find patients, notes, and calendar events by keyword.",
+            "phase": "Phase 1 - MVP",
+            "status": "Backlog"
+        },
+        {
+            "id": "PND-03",
+            "title": "AI-Assisted Clinical Pattern Recognition",
+            "scope": "Background analytical engine examining structured discoveries and daily actions to highlight correlations for practitioners.",
+            "phase": "Phase 2 - Analytical",
+            "status": "Future Phase"
+        }
+    ],
+    "proposed_features": [],
+    "issue_log": [
+        {
+            "sprint": "Sprint 1",
+            "agent": "QA Verifier / Backend Architect",
+            "problem": "TypeScript type mismatches for PractitionerDashboardStats and optional Patient/Appointment fields.",
+            "resolution": "Exported PractitionerDashboardStats and aligned Patient/Appointment DTOs in lib/types/index.ts."
+        },
+        {
+            "sprint": "Sprint 1",
+            "agent": "Backend Architect",
+            "problem": "Missing created_at in mock appointments and synchronous call to async createClient().",
+            "resolution": "Added created_at timestamps to mock appointments and added await createClient() in patientService.ts."
+        },
+        {
+            "sprint": "Sprint 2",
+            "agent": "QA Verifier / Backend Architect",
+            "problem": "Function signature mismatches in getAppointments() and createAppointment() requiring explicit practitionerId.",
+            "resolution": "Added default parameters (practitionerId = 'prac-1') and fixed client import in appointmentService.ts."
+        },
+        {
+            "sprint": "Sprint 3",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "Missing PatientDetailTabs component and duplicate function declarations in appointmentService.ts and mockData.ts.",
+            "resolution": "Created PatientDetailTabs.tsx and removed duplicate function/data declarations in appointmentService.ts and mockData.ts."
+        },
+        {
+            "sprint": "Sprint 4",
+            "agent": "QA Verifier / Backend Architect",
+            "problem": "State tracking alignment requiring clear pending_options backlog alongside completed_features.",
+            "resolution": "Updated AGENTS.md workflow and next_steps.json schema to explicitly retain pending_options and completed_features."
+        }
+    ]
+}
