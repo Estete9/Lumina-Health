@@ -25,26 +25,33 @@
         {
             "sprint": "Sprint 4",
             "title": "Add New Patient Registration & Patient Roster Management",
-            "scope": "Created AddPatientModal.tsx, PatientRosterView.tsx, CreatePatientInput interface in lib/types/index.ts, and implemented createPatient() and updatePatient() handlers in patientService.ts.",
-            "completed_at": "2026-07-23",
-            "layman_summary": "You can now add new patients directly to your practice roster! Clicking the '+ Add Patient' button opens a clean registration window where you can enter their contact info, date of birth, gender, status, primary diagnosis, and initial intake notes."
+            "scope": "Created AddPatientModal.tsx, PatientRosterView.tsx, CreatePatientInput interface in lib/types/index.ts, and implemented createPatient() and updatePatient() handlers in patientService.ts. Enforced mandatory validations, DSM-5 primary focus dropdown, @-mention secondary tag system, click-outside modal dismissal, and React Portal rendering.",
+            "completed_at": "2026-07-24",
+            "layman_summary": "You can now register new patients with mandatory DSM-5 primary diagnosis dropdowns, @-mention secondary comorbidity tags, and a responsive intake window with click-outside closure."
+        },
+        {
+            "sprint": "Sprint 5",
+            "title": "Structured Clinical Note Creation Modal & Quick Entry Tool",
+            "scope": "Created components/notes/NewClinicalNoteModal.tsx, updated Header.tsx and PatientNotesHistory.tsx, and integrated createNote() and getAllNotes() in lib/services/noteService.ts. Enables structured clinical note logging with patient selection, session date picker, discoveries tag pills (@CBT-Insight), assigned client homework items list adder, and raw session summary notes.",
+            "completed_at": "2026-07-24",
+            "layman_summary": "You can now add structured session notes from anywhere in the app! Clicking '+ Note' in the top header or '+ Add Note' in a patient's chart opens a quick pop-up window where you can select a patient, tag key clinical findings (like CBT insights or anxiety triggers), assign client homework/daily action tasks, and save session summaries directly to their clinical record."
+        }
+    ],
+    "proposed_features": [
+        {
+            "id": "PRP-01",
+            "title": "Global Header Real-Time Search & Quick Actions Hub",
+            "scope": "Upgrades the top navigation header with active real-time multi-resource search across patients, clinical notes, and scheduled sessions simultaneously, alongside quick action buttons for common tasks.",
+            "phase": "Phase 1 - MVP"
+        },
+        {
+            "id": "PRP-02",
+            "title": "Clinical Note Editing & Management Module",
+            "scope": "Extends the clinical notes system to allow practitioners to edit, amend, and delete existing session notes, ensuring clinical records can be corrected and updated.",
+            "phase": "Phase 1 - MVP"
         }
     ],
     "pending_options": [
-        {
-            "id": "PND-01",
-            "title": "Structured Clinical Note Creation Modal & Quick Entry Tool",
-            "scope": "Pop-up modal form (NewClinicalNoteModal.tsx) triggered from global header, patient profile, or calendar. Allows psychologists to log structured entries (Discoveries tags, Assigned Daily Actions list, Ailments noted, and Raw Notes) linked to a specific patient and session. Connects to noteService.ts for persistence.",
-            "phase": "Phase 1 - MVP",
-            "status": "Backlog (Sprint 4 Option 1)"
-        },
-        {
-            "id": "PND-02",
-            "title": "Global Real-Time Patient & Notes Search Bar",
-            "scope": "Enable active search functionality in top Header component to quickly find patients, notes, and calendar events by keyword.",
-            "phase": "Phase 1 - MVP",
-            "status": "Backlog"
-        },
         {
             "id": "PND-03",
             "title": "AI-Assisted Clinical Pattern Recognition",
@@ -53,19 +60,12 @@
             "status": "Future Phase"
         }
     ],
-    "proposed_features": [],
     "issue_log": [
         {
             "sprint": "Sprint 1",
             "agent": "QA Verifier / Backend Architect",
             "problem": "TypeScript type mismatches for PractitionerDashboardStats and optional Patient/Appointment fields.",
             "resolution": "Exported PractitionerDashboardStats and aligned Patient/Appointment DTOs in lib/types/index.ts."
-        },
-        {
-            "sprint": "Sprint 1",
-            "agent": "Backend Architect",
-            "problem": "Missing created_at in mock appointments and synchronous call to async createClient().",
-            "resolution": "Added created_at timestamps to mock appointments and added await createClient() in patientService.ts."
         },
         {
             "sprint": "Sprint 2",
@@ -81,9 +81,27 @@
         },
         {
             "sprint": "Sprint 4",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "Viewport padding offset and layout cropping on low-resolution screens for intake modal.",
+            "resolution": "Applied createPortal to document.body and bounded scrollable form container with fixed action footer."
+        },
+        {
+            "sprint": "Sprint 5",
             "agent": "QA Verifier / Backend Architect",
-            "problem": "State tracking alignment requiring clear pending_options backlog alongside completed_features.",
-            "resolution": "Updated AGENTS.md workflow and next_steps.json schema to explicitly retain pending_options and completed_features."
+            "problem": "Missing getAllNotes() handler in noteService.ts for querying practice-wide notes timeline.",
+            "resolution": "Implemented getAllNotes() in noteService.ts with in-memory fallback and Supabase integration."
+        },
+        {
+            "sprint": "Sprint 5 Polish",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "Form state persistence in NewClinicalNoteModal after note creation or cancellation.",
+            "resolution": "Added resetFormState() helper triggered on isOpen transition, modal cancellation, and post-submission."
+        },
+        {
+            "sprint": "Sprint 5 Real-Time Reactivity",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "Brief appearance and disappearance of newly saved notes after router.refresh().",
+            "resolution": "Updated PatientNotesHistory useEffect to merge incoming server props with existing client notes state instead of overwriting, and updated noteService getNotesByPatientId to merge DB and in-memory stores."
         }
     ]
 }
