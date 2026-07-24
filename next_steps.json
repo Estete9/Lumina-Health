@@ -94,14 +94,8 @@
         {
             "sprint": "Sprint 5 Polish",
             "agent": "QA Verifier / Frontend Engineer",
-            "problem": "Form state persistence in NewClinicalNoteModal after note creation or cancellation.",
-            "resolution": "Added resetFormState() helper triggered on isOpen transition, modal cancellation, and post-submission."
-        },
-        {
-            "sprint": "Sprint 5 Real-Time Reactivity",
-            "agent": "QA Verifier / Frontend Engineer",
-            "problem": "Brief appearance and disappearance of newly saved notes after router.refresh().",
-            "resolution": "Updated PatientNotesHistory useEffect to merge incoming server props with existing client notes state instead of overwriting, and updated noteService getNotesByPatientId to merge DB and in-memory stores."
+            "problem": "Patient row and dashboard schedule items requiring specific arrow button click to open profile.",
+            "resolution": "Made entire patient table rows (PatientTable) and dashboard appointment/note item cards (UpcomingAppointments, RecentNotes) clickable with cursor-pointer and hover highlights."
         }
     ]
 }

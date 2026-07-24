@@ -1,9 +1,14 @@
+'use client';
+
 import { Patient } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { FileText, Calendar as CalendarIcon, ChevronRight } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export function PatientTable({ patients }: { patients: Patient[] }) {
+  const router = useRouter();
+
   if (patients.length === 0) {
     return (
       <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-sm">
@@ -29,7 +34,11 @@ export function PatientTable({ patients }: { patients: Patient[] }) {
             {patients.map((patient) => {
               const isActive = patient.status === 'active';
               return (
-                <tr key={patient.id} className="hover:bg-slate-50/50 transition-colors">
+                <tr 
+                  key={patient.id} 
+                  className="hover:bg-slate-100/70 transition-colors cursor-pointer group"
+                  onClick={() => router.push(`/patients/${patient.id}`)}
+                >
                   <td className="px-6 py-4">
                     <div className="font-medium text-slate-900">
                       {patient.first_name} {patient.last_name}
@@ -58,16 +67,17 @@ export function PatientTable({ patients }: { patients: Patient[] }) {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <button type="button" className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded" title="View Notes">
+                      <button type="button" className="p-1.5 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded" title="View Notes" onClick={(e) => e.stopPropagation()}>
                         <FileText className="h-4 w-4" />
                       </button>
-                      <button type="button" className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded" title="Schedule">
+                      <button type="button" className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded" title="Schedule" onClick={(e) => e.stopPropagation()}>
                         <CalendarIcon className="h-4 w-4" />
                       </button>
                       <Link
                         href={`/patients/${patient.id}`}
                         className="p-1.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded ml-2"
                         title="View Profile"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Link>
