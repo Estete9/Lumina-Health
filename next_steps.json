@@ -39,15 +39,15 @@
     ],
     "proposed_features": [
         {
-            "id": "PRJ-06-A",
-            "title": "Global Header Real-Time Search",
-            "scope": "Upgrades the top navigation header with active real-time multi-resource search to find patients, clinical notes, and scheduled sessions instantly.",
+            "id": "PRP-01",
+            "title": "Global Header Real-Time Search & Quick Actions Hub",
+            "scope": "Upgrades the top navigation header with active real-time multi-resource search across patients, clinical notes, and scheduled sessions simultaneously, alongside quick action buttons for common tasks.",
             "phase": "Phase 1 - MVP"
         },
         {
-            "id": "PRJ-06-B",
-            "title": "Quick Appointment Actions & Status Toggles",
-            "scope": "Add quick action buttons and dropdowns on the calendar and patient detail views to easily mark appointments as completed, cancelled, or rescheduled with a single click.",
+            "id": "PRP-02",
+            "title": "Clinical Note Editing & Management Module",
+            "scope": "Extends the clinical notes system to allow practitioners to edit, amend, and delete existing session notes, ensuring clinical records can be corrected and updated.",
             "phase": "Phase 1 - MVP"
         }
     ],
@@ -90,6 +90,18 @@
             "agent": "QA Verifier / Backend Architect",
             "problem": "Missing getAllNotes() handler in noteService.ts for querying practice-wide notes timeline.",
             "resolution": "Implemented getAllNotes() in noteService.ts with in-memory fallback and Supabase integration."
+        },
+        {
+            "sprint": "Sprint 5 Polish",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "Form state persistence in NewClinicalNoteModal after note creation or cancellation.",
+            "resolution": "Added resetFormState() helper triggered on isOpen transition, modal cancellation, and post-submission."
+        },
+        {
+            "sprint": "Sprint 5 Real-Time Reactivity",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "Brief appearance and disappearance of newly saved notes after router.refresh().",
+            "resolution": "Updated PatientNotesHistory useEffect to merge incoming server props with existing client notes state instead of overwriting, and updated noteService getNotesByPatientId to merge DB and in-memory stores."
         }
     ]
 }

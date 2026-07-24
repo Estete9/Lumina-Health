@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { ClinicalNote } from '@/lib/types';
 import { FileText, Sparkles, CheckSquare, AlertCircle, Calendar, Plus } from 'lucide-react';
 import { NewClinicalNoteModal } from '@/components/notes/NewClinicalNoteModal';
@@ -11,9 +12,42 @@ interface PatientNotesHistoryProps {
 }
 
 export function PatientNotesHistory({ notes, patientId }: PatientNotesHistoryProps) {
+  const router = useRouter();
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [notesList, setNotesList] = useState<ClinicalNote[]>(notes);
 
-  if (notes.length === 0) {
+  useEffect(() => {
+    const incomingNotes = notes || [];
+    setNotesList((prev) => {
+      const incomingIds = new Set(incomingNotes.map((n) => n.id));
+      const localOnlyNotes = prev.filter((n) => !incomingIds.has(n.id));
+      return [...localOnlyNotes, ...incomingNotes];
+    });
+  }, [notes]);
+
+  useEffect(() => {
+    const handleNoteCreated = (event: Event) => {
+      const customEvent = event as CustomEvent<ClinicalNote>;
+      const newNote = customEvent.detail;
+      if (newNote && newNote.patient_id === patientId) {
+        setNotesList((prev) => [newNote, ...prev.filter((n) => n.id !== newNote.id)]);
+        router.refresh();
+      }
+    };
+
+    window.addEventListener('clinical_note_created', handleNoteCreated);
+    return () => window.removeEventListener('clinical_note_created', handleNoteCreated);
+  }, [patientId, router]);
+
+  const handleNoteSuccess = (newNote?: ClinicalNote) => {
+    if (newNote && newNote.patient_id === patientId) {
+      setNotesList((prev) => [newNote, ...prev.filter((n) => n.id !== newNote.id)]);
+      router.refresh();
+    }
+    setIsNoteModalOpen(false);
+  };
+
+  if (notesList.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm relative">
         <button
@@ -27,7 +61,7 @@ export function PatientNotesHistory({ notes, patientId }: PatientNotesHistoryPro
         <NewClinicalNoteModal
           isOpen={isNoteModalOpen}
           onClose={() => setIsNoteModalOpen(false)}
-          onSuccess={() => setIsNoteModalOpen(false)}
+          onSuccess={handleNoteSuccess}
           initialPatientId={patientId}
         />
       </div>
@@ -43,7 +77,7 @@ export function PatientNotesHistory({ notes, patientId }: PatientNotesHistoryPro
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
-            {notes.length} Total Notes
+            {notesList.length} Total Notes
           </span>
           <button
             onClick={() => setIsNoteModalOpen(true)}
@@ -56,7 +90,7 @@ export function PatientNotesHistory({ notes, patientId }: PatientNotesHistoryPro
       </div>
 
       <div className="space-y-6">
-        {notes.map((note) => {
+        {notesList.map((note) => {
           const discoveriesList = Array.isArray(note.discoveries)
             ? note.discoveries
             : typeof note.discoveries === 'string'
@@ -105,50 +139,56 @@ export function PatientNotesHistory({ notes, patientId }: PatientNotesHistoryPro
                 )}
               </div>
 
-              {/* Discoveries Grid */}
+              {/* Discoveries Section */}
               {discoveriesList.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-teal-700">
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span>Key Discoveries & Clinical Insights</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
+               <div className="space-y-1.5">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    Clinical Discoveries & Observations
+                  </h4>
+                  <div className="flex flex-wrap gap-1.5">
                     {discoveriesList.map((disc, idx) => (
-                      <div
+                      <span
                         key={idx}
-                        className="text-xs bg-teal-50 text-teal-900 px-3 py-1 rounded-xl border border-teal-200/60 font-medium"
+                        className="text-xs bg-amber-50 text-amber-900 border border-amber-200/80 px-2.5 py-1 rounded-lg font-medium"
                       >
-                        {disc}
-                      </div>
+                        @{disc}
+                      </span>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Daily Actions Assigned */}
+              {/* Daily Actions (Client Homework) */}
               {dailyActionsList.length > 0 && (
                 <div className="space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
-                    <CheckSquare className="w-3.5 h-3.5" />
-                    <span>Assigned Daily Actions</span>
-                  </div>
-                  <ul className="space-y-1 pl-1">
-                    {dailyActionsList.map((act, idx) => (
-                      <li key={idx} className="text-xs text-slate-700 flex items-start gap-2">
-                        <span className="text-emerald-500 font-bold">•</span>
-                        <span>{act}</span>
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckSquare className="w-3.5 h-3.5 text-teal-600" />
+                    Assigned Daily Actions (Homework)
+                  </h4>
+                  <ul className="space-y-1">
+                    {dailyActionsList.map((action, idx) => (
+                      <li
+                        key={idx}
+                        className="text-xs text-slate-700 bg-white border border-slate-200/80 px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-2xs"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-teal-500 shrink-0" />
+                        <span>{action}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Raw Notes Body */}
+              {/* Raw Session Notes */}
               {note.raw_notes && (
-                <div className="pt-2 border-t border-slate-200/60">
-                  <span className="text-xs font-semibold text-slate-500 block mb-1">Practitioner Session Notes</span>
-                  <p className="text-xs text-slate-600 leading-relaxed bg-white p-3 rounded-xl border border-slate-200/80 italic">
-                    "{note.raw_notes}"
+                <div className="space-y-1 pt-1">
+                  <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-slate-500" />
+                    Clinical Session Summary
+                  </h4>
+                  <p className="text-xs text-slate-700 leading-relaxed bg-white border border-slate-200/60 p-3 rounded-xl whitespace-pre-wrap">
+                    {note.raw_notes}
                   </p>
                 </div>
               )}
@@ -156,10 +196,11 @@ export function PatientNotesHistory({ notes, patientId }: PatientNotesHistoryPro
           );
         })}
       </div>
+
       <NewClinicalNoteModal
         isOpen={isNoteModalOpen}
         onClose={() => setIsNoteModalOpen(false)}
-        onSuccess={() => setIsNoteModalOpen(false)}
+        onSuccess={handleNoteSuccess}
         initialPatientId={patientId}
       />
     </div>
