@@ -91,6 +91,36 @@ export const MOCK_PATIENTS: Patient[] = [
     created_at: getRelativeDateISO(-5),
     updated_at: getRelativeDateISO(0)
   },
+  {
+    id: 'p-106',
+    practitioner_id: 'prac-1',
+    first_name: 'Rachel',
+    last_name: 'Green',
+    email: 'rachel.green@example.com',
+    phone: '+1 (555) 432-1098',
+    date_of_birth: '1992-09-15',
+    gender: 'Female',
+    status: 'completed',
+    primary_ailment: 'Panic Disorder',
+    notes_summary: 'Therapy goals achieved. Completed 16 CBT exposure sessions successfully. Discharge filed.',
+    created_at: getRelativeDateISO(-250),
+    updated_at: getRelativeDateISO(-10)
+  },
+  {
+    id: 'p-107',
+    practitioner_id: 'prac-1',
+    first_name: 'Arthur',
+    last_name: 'Pendelton',
+    email: 'arthur.pendelton@example.com',
+    phone: '+1 (555) 789-0123',
+    date_of_birth: '1970-12-01',
+    gender: 'Male',
+    status: 'archived',
+    primary_ailment: 'Generalized Anxiety Disorder',
+    notes_summary: 'Patient record archived following out-of-state relocation.',
+    created_at: getRelativeDateISO(-400),
+    updated_at: getRelativeDateISO(-90)
+  }
 ];
 
 export const MOCK_APPOINTMENTS: Appointment[] = [

@@ -49,19 +49,32 @@
             "scope": "Created components/notes/EditClinicalNoteModal.tsx, updated PatientNotesHistory.tsx with Edit (Pencil) and Delete (Trash2) note controls, and integrated updateNote() and deleteNote() service handlers in lib/services/noteService.ts. Includes delete confirmation dialog, pre-filled form fields, discoveries tag adder, client homework list modifier, and real-time timeline state updates.",
             "completed_at": "2026-07-24",
             "layman_summary": "You can now edit or delete any clinical note directly from a patient's progress timeline! Clicking the pencil icon opens an Edit Note window pre-filled with the existing session date, clinical discoveries, homework tasks, and summary text. Clicking the trash icon displays a safety confirmation prompt before permanently deleting the note."
+        },
+        {
+            "sprint": "Sprint 8",
+            "title": "Patient Record Archive & Status Lifecycle Management",
+            "scope": "Updated PatientStatus type in lib/types/index.ts, implemented updatePatientStatus() handler in patientService.ts, added status lifecycle selector dropdown in PatientProfileHeader.tsx, and integrated status filter tab bar (All Patients, Active, Inactive, Completed Therapy, Archived) with live count pills in PatientRosterView.tsx.",
+            "completed_at": "2026-07-24",
+            "layman_summary": "You can now manage patient therapy lifecycles! Clicking the status badge on a patient's chart opens a quick dropdown where you can update their status (Active Care, Inactive / On Pause, Completed Therapy, Archived). On the Patient Roster page, you can click filter tabs to view active caseloads or review historical completed and archived charts with real-time count badges."
         }
     ],
     "proposed_features": [
         {
-            "id": "PRP-03",
-            "title": "Patient Record Archive & Status Lifecycle Management",
-            "scope": "Adds controls to change patient statuses (Active, Inactive, Completed Therapy, Archived) with filtered roster views.",
+            "id": "PRP-04",
+            "title": "Clinical Summary Report & Chart Export Hub",
+            "scope": "Adds printable clinical progress summaries and downloadable patient record exports for clinical reviews and care coordination.",
             "phase": "Phase 1 - MVP"
         },
         {
-            "id": "PRP-04",
-            "title": "Clinical Summary Report & Chart Export Hub",
-            "scope": "Adds printable clinical progress summaries and downloadable patient record exports for clinical reviews.",
+            "id": "PRP-05",
+            "title": "Practitioner Analytics & Weekly Progress Overview Dashboard",
+            "scope": "Adds structured clinical metrics charts, diagnostic distribution breakdowns, and weekly session completion trends to the main dashboard.",
+            "phase": "Phase 1 - MVP"
+        },
+        {
+            "id": "PRP-06",
+            "title": "Multi-Practitioner Practice Role Access & Audit Logs",
+            "scope": "Introduces staff roles (Admin vs. Practitioner) and immutable event logs for compliance-ready patient data access tracking.",
             "phase": "Phase 1 - MVP"
         }
     ],

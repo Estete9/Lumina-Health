@@ -48,13 +48,14 @@ export function PatientTable({ patients }: { patients: Patient[] }) {
                   <td className="px-6 py-4">
                     <span
                       className={cn(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium capitalize',
-                        isActive
-                          ? 'bg-teal-100 text-teal-800'
-                          : 'bg-slate-100 text-slate-800'
+                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border capitalize',
+                        patient.status === 'active' && 'bg-teal-100 text-teal-800 border-teal-200',
+                        patient.status === 'inactive' && 'bg-slate-100 text-slate-700 border-slate-200',
+                        patient.status === 'completed' && 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                        patient.status === 'archived' && 'bg-amber-100 text-amber-800 border-amber-200'
                       )}
                     >
-                      {patient.status}
+                      {patient.status === 'completed' ? 'Completed Therapy' : patient.status}
                     </span>
                   </td>
                   <td className="px-6 py-4">

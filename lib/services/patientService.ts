@@ -1,16 +1,13 @@
 import { createClient } from '../supabase/client';
 import { handleServiceResponse } from './baseService';
-import { Patient, CreatePatientInput, ServiceResponse } from '../types';
+import { Patient, CreatePatientInput, PatientStatus, ServiceResponse } from '../types';
 import { MOCK_PATIENTS } from './mockData';
 
 let inMemoryPatients: Patient[] = [...MOCK_PATIENTS];
 
-export async function getPatients(practitionerId?: string): Promise<ServiceResponse<Patient[]>> {
+export async function getPatients(practitionerId: string = 'prac-1'): Promise<ServiceResponse<Patient[]>> {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const filtered = practitionerId 
-      ? inMemoryPatients.filter(p => p.practitioner_id === practitionerId || p.practitioner_id === 'prac-1') 
-      : inMemoryPatients;
-    return { data: filtered, error: null };
+    return { data: inMemoryPatients, error: null };
   }
 
   try {
@@ -18,47 +15,63 @@ export async function getPatients(practitionerId?: string): Promise<ServiceRespo
     if (!supabase) {
       return { data: inMemoryPatients, error: null };
     }
-    let query = supabase.from('patients').select('*');
-    if (practitionerId) {
-      query = query.eq('practitioner_id', practitionerId);
-    }
-    const { data, error } = await query;
+
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('practitioner_id', practitionerId)
+      .order('last_name', { ascending: true });
+
     if (error) {
       return handleServiceResponse<Patient[]>(inMemoryPatients, null);
     }
-    return handleServiceResponse<Patient[]>(data as Patient[], null);
+
+    const dbPatients = (data as Patient[]) || [];
+    const dbIds = new Set(dbPatients.map((p) => p.id));
+    const localFiltered = inMemoryPatients.filter((p) => !dbIds.has(p.id));
+
+    return handleServiceResponse<Patient[]>([...localFiltered, ...dbPatients], null);
   } catch (error) {
     return handleServiceResponse<Patient[]>(inMemoryPatients, error);
   }
 }
 
 export async function getPatientById(id: string): Promise<ServiceResponse<Patient>> {
+  const localPatient = inMemoryPatients.find((p) => p.id === id);
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const patient = inMemoryPatients.find(p => p.id === id) || null;
-    return { data: patient, error: patient ? null : 'Patient not found' };
+    if (localPatient) return { data: localPatient, error: null };
+    return { data: null, error: 'Patient not found' };
   }
 
   try {
     const supabase = await createClient();
     if (!supabase) {
-      const patient = inMemoryPatients.find(p => p.id === id) || null;
-      return { data: patient, error: patient ? null : 'Patient not found' };
+      if (localPatient) return { data: localPatient, error: null };
+      return { data: null, error: 'Patient not found' };
     }
-    const { data, error } = await supabase.from('patients').select('*').eq('id', id).single();
-    if (error) {
-      const patient = inMemoryPatients.find(p => p.id === id) || null;
-      return handleServiceResponse<Patient>(patient, error);
+
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      if (localPatient) return { data: localPatient, error: null };
+      return handleServiceResponse<Patient>(null, error);
     }
+
     return handleServiceResponse<Patient>(data as Patient, null);
   } catch (error) {
-    const patient = inMemoryPatients.find(p => p.id === id) || null;
-    return handleServiceResponse<Patient>(patient, error);
+    if (localPatient) return handleServiceResponse<Patient>(localPatient, null);
+    return handleServiceResponse<Patient>(null, error);
   }
 }
 
 export async function createPatient(input: CreatePatientInput, practitionerId: string = 'prac-1'): Promise<ServiceResponse<Patient>> {
   const newPatient: Patient = {
-    id: `p-${Date.now()}`,
+    id: `pat-${Date.now()}`,
     practitioner_id: practitionerId,
     first_name: input.first_name,
     last_name: input.last_name,
@@ -67,22 +80,22 @@ export async function createPatient(input: CreatePatientInput, practitionerId: s
     date_of_birth: input.date_of_birth || null,
     gender: input.gender || null,
     status: input.status || 'active',
-    primary_ailment: input.primary_ailment || null,
+    primary_ailment: input.primary_ailment,
     secondary_ailments: input.secondary_ailments || [],
-    notes_summary: input.notes_summary || null,
+    tags: input.tags || [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
 
+  inMemoryPatients.unshift(newPatient);
+
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    inMemoryPatients.unshift(newPatient);
     return { data: newPatient, error: null };
   }
 
   try {
     const supabase = await createClient();
     if (!supabase) {
-      inMemoryPatients.unshift(newPatient);
       return { data: newPatient, error: null };
     }
 
@@ -99,56 +112,113 @@ export async function createPatient(input: CreatePatientInput, practitionerId: s
         status: input.status || 'active',
         primary_ailment: input.primary_ailment,
         secondary_ailments: input.secondary_ailments,
-        notes_summary: input.notes_summary
+        tags: input.tags
       })
       .select()
       .single();
 
     if (error || !data) {
-      inMemoryPatients.unshift(newPatient);
       return { data: newPatient, error: null };
     }
 
     return handleServiceResponse<Patient>(data as Patient, null);
   } catch (error) {
-    inMemoryPatients.unshift(newPatient);
     return handleServiceResponse<Patient>(newPatient, null);
   }
 }
 
 export async function updatePatient(id: string, input: Partial<CreatePatientInput>): Promise<ServiceResponse<Patient>> {
-  const index = inMemoryPatients.findIndex(p => p.id === id);
-  if (index !== -1) {
-    inMemoryPatients[index] = {
-      ...inMemoryPatients[index],
+  const patientIndex = inMemoryPatients.findIndex((p) => p.id === id);
+  let updatedInMemoryPatient: Patient | null = null;
+
+  if (patientIndex !== -1) {
+    inMemoryPatients[patientIndex] = {
+      ...inMemoryPatients[patientIndex],
       ...input,
       updated_at: new Date().toISOString()
     };
+    updatedInMemoryPatient = inMemoryPatients[patientIndex];
   }
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    return { data: inMemoryPatients[index] || null, error: null };
+    if (updatedInMemoryPatient) return { data: updatedInMemoryPatient, error: null };
+    return { data: null, error: 'Patient not found' };
   }
 
   try {
     const supabase = await createClient();
     if (!supabase) {
-      return { data: inMemoryPatients[index] || null, error: null };
+      if (updatedInMemoryPatient) return { data: updatedInMemoryPatient, error: null };
+      return { data: null, error: 'Patient not found' };
     }
 
     const { data, error } = await supabase
       .from('patients')
-      .update(input)
+      .update({ ...input, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
 
     if (error || !data) {
-      return { data: inMemoryPatients[index] || null, error: null };
+      if (updatedInMemoryPatient) return { data: updatedInMemoryPatient, error: null };
+      return handleServiceResponse<Patient>(null, error);
     }
 
     return handleServiceResponse<Patient>(data as Patient, null);
   } catch (error) {
-    return { data: inMemoryPatients[index] || null, error: null };
+    if (updatedInMemoryPatient) return handleServiceResponse<Patient>(updatedInMemoryPatient, null);
+    return handleServiceResponse<Patient>(null, error);
+  }
+}
+
+export async function updatePatientStatus(id: string, status: PatientStatus): Promise<ServiceResponse<Patient>> {
+  const patientIndex = inMemoryPatients.findIndex((p) => p.id === id);
+  let updatedInMemoryPatient: Patient | null = null;
+
+  if (patientIndex !== -1) {
+    inMemoryPatients[patientIndex] = {
+      ...inMemoryPatients[patientIndex],
+      status,
+      updated_at: new Date().toISOString()
+    };
+    updatedInMemoryPatient = inMemoryPatients[patientIndex];
+  } else {
+    // Fallback patient if not in memory
+    updatedInMemoryPatient = {
+      id,
+      practitioner_id: 'prac-1',
+      first_name: 'Patient',
+      last_name: id,
+      status,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    inMemoryPatients.unshift(updatedInMemoryPatient);
+  }
+
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return { data: updatedInMemoryPatient, error: null };
+  }
+
+  try {
+    const supabase = await createClient();
+    if (!supabase) {
+      return { data: updatedInMemoryPatient, error: null };
+    }
+
+    const { data, error } = await supabase
+      .from('patients')
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return { data: updatedInMemoryPatient, error: null };
+    }
+
+    return handleServiceResponse<Patient>(data as Patient, null);
+  } catch (error) {
+    return handleServiceResponse<Patient>(updatedInMemoryPatient, null);
   }
 }

@@ -8,7 +8,7 @@ export interface Practitioner {
   updated_at?: string;
 }
 
-export type PatientStatus = 'active' | 'inactive' | 'archived';
+export type PatientStatus = 'active' | 'inactive' | 'completed' | 'archived';
 
 export interface Patient {
   id: string;
@@ -62,9 +62,9 @@ export interface CreateAppointmentInput {
   patient_id: string;
   scheduled_at: string;
   duration_minutes: number;
-  patient_name?: string;
   session_type?: string;
   notes?: string;
+  patient_name?: string;
 }
 
 export interface ClinicalNote {

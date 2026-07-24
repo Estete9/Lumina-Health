@@ -259,6 +259,7 @@ export function AddPatientModal({ isOpen, onClose, onSuccess }: AddPatientModalP
                 >
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
+                  <option value="completed">Completed Therapy</option>
                   <option value="archived">Archived</option>
                 </select>
               </div>
