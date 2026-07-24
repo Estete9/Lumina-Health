@@ -42,19 +42,26 @@
             "scope": "Created components/layout/GlobalSearchBar.tsx, updated Header.tsx, created lib/services/searchService.ts, and added SearchResultItem DTO in lib/types/index.ts. Enables live real-time multi-resource practice search across Patients, Clinical Notes, and Appointments with debounced queries, categorized icons/badges, click-outside dismissal, Esc shortcut, and instant navigation.",
             "completed_at": "2026-07-24",
             "layman_summary": "You now have a powerful live search bar right in the top navigation header! As you type a patient name, clinical tag (like @CBT-Insight), or session date, a floating menu instantly displays categorized search results across your patients, session notes, and calendar appointments, letting you jump directly to any record with one click."
+        },
+        {
+            "sprint": "Sprint 7",
+            "title": "Clinical Note Editing & Management Module",
+            "scope": "Created components/notes/EditClinicalNoteModal.tsx, updated PatientNotesHistory.tsx with Edit (Pencil) and Delete (Trash2) note controls, and integrated updateNote() and deleteNote() service handlers in lib/services/noteService.ts. Includes delete confirmation dialog, pre-filled form fields, discoveries tag adder, client homework list modifier, and real-time timeline state updates.",
+            "completed_at": "2026-07-24",
+            "layman_summary": "You can now edit or delete any clinical note directly from a patient's progress timeline! Clicking the pencil icon opens an Edit Note window pre-filled with the existing session date, clinical discoveries, homework tasks, and summary text. Clicking the trash icon displays a safety confirmation prompt before permanently deleting the note."
         }
     ],
     "proposed_features": [
         {
-            "id": "PRP-02",
-            "title": "Clinical Note Editing & Management Module",
-            "scope": "Extends the clinical notes system to allow practitioners to edit, amend, and delete existing session notes, ensuring clinical records can be corrected and updated.",
-            "phase": "Phase 1 - MVP"
-        },
-        {
             "id": "PRP-03",
             "title": "Patient Record Archive & Status Lifecycle Management",
             "scope": "Adds controls to change patient statuses (Active, Inactive, Completed Therapy, Archived) with filtered roster views.",
+            "phase": "Phase 1 - MVP"
+        },
+        {
+            "id": "PRP-04",
+            "title": "Clinical Summary Report & Chart Export Hub",
+            "scope": "Adds printable clinical progress summaries and downloadable patient record exports for clinical reviews.",
             "phase": "Phase 1 - MVP"
         }
     ],
@@ -109,6 +116,24 @@
             "agent": "QA Verifier / Backend Architect",
             "problem": "Searching tag queries with @ prefix (e.g. @mild) failing to match ailment or tag text fields.",
             "resolution": "Normalized search query in searchService.ts by stripping leading @ or # symbols, searching case-insensitively across patient names, primary ailments, secondary ailments, and tags array."
+        },
+        {
+            "sprint": "Sprint 7 Polish",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "Newly edited clinical notes reverting to original state after router.refresh() and session date shifting in edit modal.",
+            "resolution": "Updated PatientNotesHistory useEffect to compare updated_at timestamps when merging server props with local state, and added formatForDateInput helper in EditClinicalNoteModal to preserve exact session dates."
+        },
+        {
+            "sprint": "Sprint 7 Polish 2",
+            "agent": "QA Verifier / Backend Architect",
+            "problem": "Editing a note after deleting another note returning 'Note not found in memory' error.",
+            "resolution": "Updated updateNote handler in noteService.ts to gracefully upsert missing notes into the in-memory array if noteIndex === -1."
+        },
+        {
+            "sprint": "Sprint 7 Polish 3",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "Deleted clinical notes being restored from static server props upon router.refresh() and overwriting newer notes.",
+            "resolution": "Added deletedIds state set in PatientNotesHistory to filter out erased note IDs from incoming server props and local state merging."
         }
     ]
 }
