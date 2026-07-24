@@ -1,17 +1,8 @@
-// Domain Data Types & API Contracts for Lumina Health
-
-export interface ServiceResponse<T> {
-  data: T | null;
-  error: string | null;
-}
-
 export interface Practitioner {
   id: string;
-  user_id?: string;
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string;
-  license_number?: string;
+  specialty?: string;
   clinic_name?: string;
   created_at: string;
   updated_at?: string;
@@ -31,6 +22,7 @@ export interface Patient {
   status: PatientStatus;
   primary_ailment?: string | null;
   secondary_ailments?: string[] | null;
+  tags?: string[] | null;
   notes_summary?: string | null;
   created_at: string;
   updated_at: string;
@@ -44,32 +36,10 @@ export interface CreatePatientInput {
   date_of_birth?: string;
   gender?: string;
   status?: PatientStatus;
-  primary_ailment?: string;
+  primary_ailment: string;
   secondary_ailments?: string[];
+  tags?: string[];
   notes_summary?: string;
-}
-
-export interface ClinicalNote {
-  id: string;
-  patient_id: string;
-  practitioner_id: string;
-  session_date?: string;
-  date?: string;
-  discoveries?: string | string[] | null;
-  daily_actions?: string | string[] | null;
-  ailments?: string | string[] | null;
-  raw_notes?: string | null;
-  created_at: string;
-  updated_at?: string;
-}
-
-export interface CreateNoteInput {
-  patient_id: string;
-  session_date: string;
-  discoveries: string[];
-  daily_actions: string[];
-  ailments: string[];
-  raw_notes: string;
 }
 
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show';
@@ -78,25 +48,45 @@ export interface Appointment {
   id: string;
   patient_id: string;
   practitioner_id: string;
-  patient_name?: string;
   scheduled_at: string;
-  start_time?: string;
-  end_time?: string;
   duration_minutes: number;
-  status: AppointmentStatus | string;
-  session_type: string;
-  notes?: string;
+  status: AppointmentStatus;
+  notes?: string | null;
   created_at: string;
   updated_at?: string;
+  patient_name?: string;
+  session_type?: string;
 }
 
 export interface CreateAppointmentInput {
   patient_id: string;
-  patient_name: string;
   scheduled_at: string;
   duration_minutes: number;
-  session_type: string;
+  patient_name?: string;
+  session_type?: string;
   notes?: string;
+}
+
+export interface ClinicalNote {
+  id: string;
+  patient_id: string;
+  practitioner_id: string;
+  session_date?: string;
+  discoveries?: string[] | string | null;
+  daily_actions?: string[] | string | null;
+  ailments?: string[] | string | null;
+  raw_notes?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateNoteInput {
+  patient_id: string;
+  session_date: string;
+  discoveries?: string[];
+  daily_actions?: string[];
+  ailments?: string[];
+  raw_notes?: string;
 }
 
 export interface PractitionerDashboardStats {
@@ -107,6 +97,11 @@ export interface PractitionerDashboardStats {
   recentPatients: Patient[];
 }
 
+export interface ServiceResponse<T> {
+  data: T | null;
+  error: string | null;
+}
+
 export interface SearchResultItem {
   id: string;
   type: 'patient' | 'note' | 'appointment';
@@ -115,4 +110,3 @@ export interface SearchResultItem {
   url: string;
   badge?: string;
 }
-

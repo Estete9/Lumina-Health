@@ -1,26 +1,34 @@
 import { createClient } from '../supabase/client';
 import { handleServiceResponse } from './baseService';
-import { SearchResultItem, ServiceResponse, Patient, ClinicalNote, Appointment } from '../types';
+import { SearchResultItem, ServiceResponse, Patient } from '../types';
 import { MOCK_PATIENTS, MOCK_CLINICAL_NOTES, MOCK_APPOINTMENTS } from './mockData';
 
 export async function searchGlobalResources(query: string): Promise<ServiceResponse<SearchResultItem[]>> {
-  const trimmed = query.trim().toLowerCase();
-  if (!trimmed) {
+  const rawLower = query.toLowerCase();
+  const normalizedQuery = rawLower.replace(/^[@#]/, '').trim();
+  const searchPattern = normalizedQuery || rawLower;
+
+  if (!searchPattern) {
     return { data: [], error: null };
   }
 
   // In-memory fallback search across mock data
   const matchedPatients: SearchResultItem[] = MOCK_PATIENTS
-    .filter((p) => {
+    .filter((p: Patient) => {
       const fullName = `${p.first_name} ${p.last_name}`.toLowerCase();
       const email = (p.email || '').toLowerCase();
       const ailment = (p.primary_ailment || '').toLowerCase();
+      const secondaryStr = Array.isArray(p.secondary_ailments) ? p.secondary_ailments.join(' ').toLowerCase() : '';
+      const tagsStr = Array.isArray(p.tags) ? p.tags.join(' ').toLowerCase() : '';
+
       return (
-        fullName.includes(trimmed) ||
-        p.first_name.toLowerCase().includes(trimmed) ||
-        p.last_name.toLowerCase().includes(trimmed) ||
-        email.includes(trimmed) ||
-        ailment.includes(trimmed)
+        fullName.includes(searchPattern) ||
+        p.first_name.toLowerCase().includes(searchPattern) ||
+        p.last_name.toLowerCase().includes(searchPattern) ||
+        email.includes(searchPattern) ||
+        ailment.includes(searchPattern) ||
+        secondaryStr.includes(searchPattern) ||
+        tagsStr.includes(searchPattern)
       );
     })
     .map((p) => ({
@@ -41,7 +49,12 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
       const ailmentsStr = Array.isArray(n.ailments)
         ? n.ailments.join(' ').toLowerCase()
         : (n.ailments || '').toLowerCase();
-      return discoveriesStr.includes(trimmed) || rawNotes.includes(trimmed) || ailmentsStr.includes(trimmed);
+
+      return (
+        discoveriesStr.includes(searchPattern) ||
+        rawNotes.includes(searchPattern) ||
+        ailmentsStr.includes(searchPattern)
+      );
     })
     .map((n) => {
       const patient = MOCK_PATIENTS.find((p) => p.id === n.patient_id);
@@ -62,7 +75,7 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
       const pName = (a.patient_name || '').toLowerCase();
       const sessionType = (a.session_type || '').toLowerCase();
       const notes = (a.notes || '').toLowerCase();
-      return pName.includes(trimmed) || sessionType.includes(trimmed) || notes.includes(trimmed);
+      return pName.includes(searchPattern) || sessionType.includes(searchPattern) || notes.includes(searchPattern);
     })
     .map((a) => {
       const formattedDate = new Date(a.scheduled_at).toLocaleDateString(undefined, {
@@ -97,22 +110,18 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
       supabase
         .from('patients')
         .select('*')
-        .or(`first_name.ilike.%${trimmed}%,last_name.ilike.%${trimmed}%,email.ilike.%${trimmed}%,primary_ailment.ilike.%${trimmed}%`),
+        .or(`first_name.ilike.%${searchPattern}%,last_name.ilike.%${searchPattern}%,email.ilike.%${searchPattern}%,primary_ailment.ilike.%${searchPattern}%`),
       supabase
         .from('clinical_notes')
         .select('*')
-        .or(`raw_notes.ilike.%${trimmed}%`),
+        .or(`raw_notes.ilike.%${searchPattern}%`),
       supabase
         .from('appointments')
         .select('*')
-        .or(`patient_name.ilike.%${trimmed}%,session_type.ilike.%${trimmed}%,notes.ilike.%${trimmed}%`)
+        .or(`patient_name.ilike.%${searchPattern}%,session_type.ilike.%${searchPattern}%`)
     ]);
 
-    if (patientsRes.error || notesRes.error || appointmentsRes.error) {
-      return { data: inMemoryResults, error: null };
-    }
-
-    const dbPatients: SearchResultItem[] = (patientsRes.data || []).map((p: Patient) => ({
+    const dbPatients: SearchResultItem[] = (patientsRes.data || []).map((p: any) => ({
       id: p.id,
       type: 'patient' as const,
       title: `${p.first_name} ${p.last_name}`,
@@ -121,16 +130,20 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
       badge: p.status ? p.status.charAt(0).toUpperCase() + p.status.slice(1) : undefined
     }));
 
-    const dbNotes: SearchResultItem[] = (notesRes.data || []).map((n: ClinicalNote) => ({
-      id: n.id,
-      type: 'note' as const,
-      title: `Note: Clinical Record`,
-      subtitle: n.raw_notes ? (n.raw_notes.length > 60 ? n.raw_notes.slice(0, 60) + '...' : n.raw_notes) : 'Clinical Note',
-      url: `/patients/${n.patient_id}?tab=notes`,
-      badge: 'Clinical Note'
-    }));
+    const dbNotes: SearchResultItem[] = (notesRes.data || []).map((n: any) => {
+      const patient = MOCK_PATIENTS.find((p) => p.id === n.patient_id);
+      const patientName = patient ? `${patient.first_name} ${patient.last_name}` : 'Patient';
+      return {
+        id: n.id,
+        type: 'note' as const,
+        title: `Note: ${patientName}`,
+        subtitle: n.raw_notes ? (n.raw_notes.length > 60 ? n.raw_notes.slice(0, 60) + '...' : n.raw_notes) : 'Clinical Note',
+        url: `/patients/${n.patient_id}?tab=notes`,
+        badge: 'Clinical Note'
+      };
+    });
 
-    const dbAppointments: SearchResultItem[] = (appointmentsRes.data || []).map((a: Appointment) => ({
+    const dbAppointments: SearchResultItem[] = (appointmentsRes.data || []).map((a: any) => ({
       id: a.id,
       type: 'appointment' as const,
       title: `${a.patient_name || 'Appointment'} - ${a.session_type}`,
@@ -139,12 +152,12 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
       badge: a.status ? a.status.charAt(0).toUpperCase() + a.status.slice(1) : undefined
     }));
 
-    const combinedDb = [...dbPatients, ...dbNotes, ...dbAppointments];
-    const existingIds = new Set(combinedDb.map((item) => item.id));
-    const merged = [...combinedDb, ...inMemoryResults.filter((item) => !existingIds.has(item.id))];
+    const dbResults = [...dbPatients, ...dbNotes, ...dbAppointments];
+    const dbIds = new Set(dbResults.map((r) => r.id));
+    const uniqueInMemory = inMemoryResults.filter((r) => !dbIds.has(r.id));
 
-    return { data: merged, error: null };
+    return { data: [...dbResults, ...uniqueInMemory], error: null };
   } catch (error) {
-    return handleServiceResponse<SearchResultItem[]>(inMemoryResults, error);
+    return { data: inMemoryResults, error: null };
   }
 }

@@ -35,7 +35,10 @@ export function GlobalSearchBar() {
   }, []);
 
   useEffect(() => {
-    if (!query.trim() || query.trim().length < 2) {
+    const trimmed = query.trim();
+    const normalized = trimmed.replace(/^[@#]/, '').trim();
+
+    if (!normalized && !trimmed) {
       setResults([]);
       setIsOpen(false);
       return;
@@ -72,8 +75,11 @@ export function GlobalSearchBar() {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
-          placeholder="Search patients, tags (@CBT), or session dates..."
+          onFocus={() => {
+            const normalized = query.trim().replace(/^[@#]/, '').trim();
+            if (normalized.length >= 1 || query.trim().length >= 1) setIsOpen(true);
+          }}
+          placeholder="Search patients, primary ailments, or tags (e.g. @mild)..."
           className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-9 py-2 text-xs text-slate-800 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none transition-all shadow-2xs"
         />
         {query && (

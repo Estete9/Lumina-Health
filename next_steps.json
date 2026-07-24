@@ -103,6 +103,12 @@
             "agent": "QA Verifier / Frontend Engineer",
             "problem": "Patient row and dashboard schedule items requiring specific arrow button click to open profile.",
             "resolution": "Made entire patient table rows (PatientTable) and dashboard appointment/note item cards (UpcomingAppointments, RecentNotes) clickable with cursor-pointer and hover highlights."
+        },
+        {
+            "sprint": "Sprint 6 Polish",
+            "agent": "QA Verifier / Backend Architect",
+            "problem": "Searching tag queries with @ prefix (e.g. @mild) failing to match ailment or tag text fields.",
+            "resolution": "Normalized search query in searchService.ts by stripping leading @ or # symbols, searching case-insensitively across patient names, primary ailments, secondary ailments, and tags array."
         }
     ]
 }
