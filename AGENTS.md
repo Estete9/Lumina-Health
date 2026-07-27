@@ -40,7 +40,7 @@ Develop a secure, highly functional practice management and clinical analysis to
    - **Output:** Writes `tech-brief.md` containing verified code patterns and API requirements. Self-terminates upon completion to unblock Gate 2.
 
 3. **The Backend Architect (Database & API)**
-   - **Task:** Waits for Gate 1 (Scout) to finish (if applicable). Reads `tech-brief.md` (or requirement specs). Implements database migrations, Row Level Security (RLS) policies, and typed service handlers.
+   - **Task:** Waits for Gate 1 (Scout) to finish (if applicable). Reads `tech-brief.md` (or requirement specs). Implements database migrations, Row Level Security (RLS) policies, typed service handlers, and writes corresponding **Unit Tests** in `__tests__/sprints/`.
    - **Constraint:** Strictly isolates patient records. Defines explicit TypeScript interfaces for the frontend to consume. Does not run terminal type-check commands; delegates verification to QA Verifier.
 
 4. **The Frontend Engineer (UI/UX)**
@@ -48,7 +48,9 @@ Develop a secure, highly functional practice management and clinical analysis to
    - **Constraint:** Focuses on clean component modularity, accessible forms, and responsive layouts. Does not run terminal type-check commands; delegates verification to QA Verifier.
 
 5. **The QA Verifier (Integration Tester)**
-   - **Task:** Runs ONLY AFTER both the Backend Architect and Frontend Engineer have completed their work and self-terminated. Conducts static type checking, tests API error handling, and verifies that UI states properly isolate patient data without memory leaks or state bleeding. Sole agent authorized to execute `npx tsc --noEmit` during Gate 3.
+   - **Task:** Runs ONLY AFTER both the Backend Architect and Frontend Engineer have completed their work and self-terminated. 
+   - **E2E Test Creation:** Writes the sprint's End-to-End browser test file in `e2e/sprints/` targeting the newly built UI components and pages.
+   - **Verification Execution:** Conducts static type checking (`npx tsc --noEmit`), runs automated unit tests (`npm run test`), and executes E2E browser tests (`npm run test:e2e` / Playwright) for sprint completions or when explicitly requested. Sole agent authorized to execute terminal test commands during Gate 3.
 
 ## Workflow Loop
 
@@ -58,11 +60,15 @@ Develop a secure, highly functional practice management and clinical analysis to
    - *If NO:* Skip Step 2 entirely and proceed directly to Step 3.
 3. **Phase 2: Implementation (Sequential Gate):** - Once Step 2 is finished (or skipped), spawn **The Backend Architect** and **The Frontend Engineer**.
    - Implementation agents build files without running terminal type-checks. Orchestrator must wait for both implementation subagents to self-terminate before spawning Gate 3.
-   - The Backend Architect sets up data models and services; the Frontend Engineer builds the visual interface and connects to the service abstractions.
+   - The Backend Architect sets up data models, implements service functions, and writes the sprint's **Unit Test file** in `__tests__/sprints/`.
+   - The Frontend Engineer builds the visual interface and connects to the verified service abstractions.
    - Both agents must complete their work and self-terminate before moving to Step 4.
 4. **Phase 3: QA & Verification (Sequential Gate):** - Once BOTH implementation agents have self-terminated, spawn **The QA Verifier**.
-   - QA Verifier runs `npx tsc --noEmit` once. Orchestrator waits for QA Verifier to self-terminate before announcing completion.
-   - *Failure Protocol:* If QA fails, return the error to the responsible agent. The agent has a strict maximum of **3 attempts** to fix the issue. If it fails 3 times, the Orchestrator must halt and request human intervention.
+   - **The QA Verifier** creates the sprint's **E2E Test file** in `e2e/sprints/` targeting the new UI workflow.
+   - QA Verifier runs static checks (`npx tsc --noEmit`) and unit tests (`npm run test`).
+   - If this is a sprint completion or explicitly requested by the user, QA Verifier ALSO runs E2E tests (`npm run test:e2e`).
+   - Orchestrator waits for QA Verifier to self-terminate before announcing completion.
+   - *Failure Protocol:* If QA fails (compilation, unit, or E2E), return the error to the responsible agent. The agent has a strict maximum of **3 attempts** to fix the issue. If it fails 3 times, the Orchestrator must halt and request human intervention.
 5. **Phase 4: State Update & Synthesis:** - Upon an explicit QA Verifier PASS, Orchestrator synthesizes results to `next_steps.json`, logging the completed features in `completed_features` and preserving remaining pending backlog options in `pending_options`.
    - **Bug Logging:** If a bug was encountered and fixed, document the exact problem and solution in the `issue_log` array.
    - **Layman's Summary:** Include a `layman_summary` key inside the `completed_features` array that explains exactly what was built using simple, non-technical language.
