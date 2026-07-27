@@ -162,6 +162,12 @@
             "agent": "QA Verifier / Frontend Engineer",
             "problem": "Deleted clinical notes being restored from static server props upon router.refresh() and overwriting newer notes.",
             "resolution": "Added deletedIds state set in PatientNotesHistory to filter out erased note IDs from incoming server props and local state merging."
+        },
+        {
+            "sprint": "Sprint 10 Polish 2",
+            "agent": "QA Verifier / Frontend Engineer",
+            "problem": "WeeklySessionTrendChart bars rendering with 0 height causing the chart to appear completely empty despite having valid scheduled sessions data.",
+            "resolution": "Added h-full to the flex column wrapper inside the chart component to prevent items-end flexbox property from collapsing the bar container's relative height."
         }
     ]
 }

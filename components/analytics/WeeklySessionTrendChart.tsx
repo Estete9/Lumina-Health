@@ -12,7 +12,7 @@ export function WeeklySessionTrendChart({ data }: { data: WeeklyTrendItem[] }) {
           const heightPctCompleted = (item.completedSessions / maxScheduled) * 100;
           
           return (
-            <div key={i} className="flex flex-col items-center gap-2 w-full flex-1">
+            <div key={i} className="flex flex-col items-center gap-2 w-full flex-1 h-full">
               <div className="relative flex h-full w-full justify-center">
                 <div 
                   className="absolute bottom-0 w-3 rounded-t-sm bg-slate-200 transition-all" 
