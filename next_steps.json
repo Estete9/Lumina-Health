@@ -56,6 +56,13 @@
             "scope": "Updated PatientStatus type in lib/types/index.ts, implemented updatePatientStatus() handler in patientService.ts, added status lifecycle selector dropdown in PatientProfileHeader.tsx, and integrated status filter tab bar (All Patients, Active, Inactive, Completed Therapy, Archived) with live count pills in PatientRosterView.tsx.",
             "completed_at": "2026-07-24",
             "layman_summary": "You can now manage patient therapy lifecycles! Clicking the status badge on a patient's chart opens a quick dropdown where you can update their status (Active Care, Inactive / On Pause, Completed Therapy, Archived). On the Patient Roster page, you can click filter tabs to view active caseloads or review historical completed and archived charts with real-time count badges."
+        },
+        {
+            "sprint": "Sprint 9",
+            "title": "Practitioner Authentication & Registration Flow",
+            "scope": "Implemented authService.ts with login, register, logout, getCurrentUser, and getSession handlers supporting dual-mode execution (Supabase Auth + local mock session fallback). Created /login and /register page routes with modern form controls, input validations, error state alerts, and updated Header navigation with active practitioner profile display and logout dropdown. Created unit test file __tests__/sprints/sprint9_auth.test.ts and E2E browser test file e2e/sprints/sprint9_auth.spec.ts.",
+            "completed_at": "2026-07-27",
+            "layman_summary": "Practitioners can now log in and register for Lumina Health! You can access dedicated /login and /register pages with clean input forms, validation, and error alerts. Once logged in, your practitioner profile (Dr. Sarah Jenkins) displays in the top navigation header with an interactive dropdown to log out at any time."
         }
     ],
     "proposed_features": [

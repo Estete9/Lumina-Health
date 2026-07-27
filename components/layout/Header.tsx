@@ -1,12 +1,47 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Bell, Plus, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import { Bell, Plus, ShieldCheck, LogOut, User as UserIcon } from 'lucide-react';
 import { NewClinicalNoteModal } from '@/components/notes/NewClinicalNoteModal';
 import { GlobalSearchBar } from './GlobalSearchBar';
+import { getCurrentUser, logout } from '@/lib/services/authService';
+import { Practitioner } from '@/lib/types';
 
 export function Header() {
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [user, setUser] = useState<Practitioner | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const router = useRouter();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    async function fetchUser() {
+      const res = await getCurrentUser();
+      if (res.data) setUser(res.data);
+    }
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setDropdownOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+    router.push('/login');
+    router.refresh();
+  };
+
+  const initials = user?.name 
+    ? user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()
+    : 'P';
 
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200 bg-white/90 px-6 backdrop-blur-md">
@@ -38,19 +73,40 @@ export function Header() {
         </button>
 
         {/* Practitioner User Profile Pill */}
-        <div className="flex items-center gap-3 border-l border-slate-200 pl-4">
-          <div className="h-9 w-9 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs border border-teal-200 shadow-2xs">
-            DJ
-          </div>
-          <div className="hidden sm:block text-left">
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-bold text-slate-800">Dr. Jenkins</span>
-              <span title="HIPAA Compliant Session">
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-              </span>
+        <div className="relative flex items-center gap-3 border-l border-slate-200 pl-4" ref={dropdownRef}>
+          <button 
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center gap-3 text-left focus:outline-none rounded-md hover:bg-slate-50 p-1 transition-colors"
+          >
+            <div className="h-9 w-9 rounded-full bg-teal-100 text-teal-800 flex items-center justify-center font-bold text-xs border border-teal-200 shadow-2xs">
+              {initials}
             </div>
-            <p className="text-[10px] text-slate-500 font-medium">Clinical Psychologist</p>
-          </div>
+            <div className="hidden sm:block text-left">
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-bold text-slate-800">{user?.name || 'Loading...'}</span>
+                <span title="HIPAA Compliant Session">
+                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                </span>
+              </div>
+              <p className="text-[10px] text-slate-500 font-medium">{user?.specialty || 'General Practice'}</p>
+            </div>
+          </button>
+
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 top-full w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+              <div className="px-4 py-2 text-xs text-slate-500 border-b border-slate-100">
+                Signed in as<br />
+                <span className="font-semibold text-slate-900 truncate block">{user?.email}</span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-100 flex items-center gap-2 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -63,3 +119,4 @@ export function Header() {
     </header>
   );
 }
+

@@ -110,3 +110,36 @@ export interface SearchResultItem {
   url: string;
   badge?: string;
 }
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  specialty?: string;
+  clinic_name?: string;
+  created_at: string;
+}
+
+export interface LoginInput {
+  email: string;
+  password?: string;
+}
+
+export interface RegisterInput {
+  name: string;
+  email: string;
+  password?: string;
+  specialty?: string;
+}
+
+export interface AuthSession {
+  user: AuthUser | null;
+  session_id?: string;
+  access_token?: string;
+  expires_at?: number;
+}
+
+export interface AuthResponseData {
+  user: AuthUser | null;
+  session: AuthSession | null;
+}
