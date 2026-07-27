@@ -77,6 +77,27 @@
             "scope": "Refactored the AnalyticsDashboard.tsx UI to use CircularKPICard and other visual progress indicators across the clinical, practice, and caseload tabs. Truncated list items (e.g. Burnout Risk Assessment) to 5 items with an expand/collapse toggle. Replaced text-based KPI metrics and icons with percentage progress bars to match the premium design style.",
             "completed_at": "2026-07-27",
             "layman_summary": "We've significantly upgraded the visual experience of the Analytics page! The simple text numbers across all your key performance indicators have been transformed into beautiful circular progress rings and charts. We also made long lists (like the Burnout Risk factors) collapse after 5 items with an 'expand' button, keeping the interface clean and instantly understandable."
+        },
+        {
+            "sprint": "Sprint 10 Polish 3",
+            "title": "Analytics Dashboard Clinical Lists Truncation",
+            "scope": "Implemented a 5-item truncation with an expand/collapse toggle button for the Symptom Severity Line Trend and DSM-5 Diagnostic Distribution lists in the clinical outcomes tab. Ensured expand buttons only render when the list length strictly exceeds 5 items.",
+            "completed_at": "2026-07-27",
+            "layman_summary": "We've extended the clean, collapsible list behavior to the Clinical Outcomes section. If you track many different patient symptoms or DSM-5 diagnoses over time, those lists will now neatly collapse to show only the top 5, with a button to instantly view the rest of your clinical data."
+        },
+        {
+            "sprint": "Sprint 10 Polish 4",
+            "title": "Clinical Discoveries Responsive Layout Truncation",
+            "scope": "Implemented a dynamic React useEffect algorithm in ClinicalDiscoveriesChart.tsx to compute the number of CSS grid columns based on viewport width (mobile: 1, tablet: 2, desktop: 3). Truncated the list dynamically to strictly render only 2 rows when collapsed (e.g. max 6 items on desktop, 4 on tablet, 2 on mobile), complete with a dynamic expand/collapse toggle.",
+            "completed_at": "2026-07-27",
+            "layman_summary": "The Top Clinical Discoveries grid now intelligently adapts to your screen size! Whether you are on a phone, a tablet, or a massive desktop monitor, the grid will calculate how much space it has and cleanly truncate the list to show exactly 2 rows of discovery cards, keeping your dashboard beautifully aligned."
+        },
+        {
+            "sprint": "Sprint 10 Polish 5",
+            "title": "Clinical Outcomes Dashboard Re-Architecture",
+            "scope": "Redesigned the Clinical Outcomes charts grid. Swapped the layout order so DSM-5 Diagnostic Distribution renders on the left, and Symptom Severity Line Trend renders on the right. Refactored the grid columns from a 1:1 ratio to a 3:2 ratio (lg:grid-cols-5). Replaced text-based severity labels with color-coded dot badges for instant visual scanning.",
+            "completed_at": "2026-07-27",
+            "layman_summary": "We've fine-tuned the Clinical Outcomes layout for maximum readability. The denser diagnostic distribution breakdown now anchors the left side of your screen with more breathing room (3/5ths width), while the line trend sits cleanly on the right (2/5ths width). We also stripped out redundant text and replaced it with beautiful, color-coded severity dots so you can process the data at a single glance!"
         }
     ],
     "proposed_features": [

@@ -22,8 +22,17 @@ test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E'
     await clinicalTab.click();
 
     await expect(page.locator('[data-testid="view-clinical-outcomes"]')).toBeVisible();
-    await expect(page.locator('body')).toContainText(/Symptom Severity Line Trend/i);
     await expect(page.locator('body')).toContainText(/DSM-5 Diagnostic Distribution/i);
+    await expect(page.locator('body')).toContainText(/Symptom Severity Line Trend/i);
+
+    // Verify 3:2 grid ratio layout classes
+    const dsm5Header = page.getByRole('heading', { name: /DSM-5 Diagnostic Distribution/i });
+    const dsm5Card = page.locator('div.rounded-xl').filter({ has: dsm5Header });
+    await expect(dsm5Card).toHaveClass(/lg:col-span-3/);
+
+    const severityHeader = page.getByRole('heading', { name: /Symptom Severity Line Trend/i });
+    const severityCard = page.locator('div.rounded-xl').filter({ has: severityHeader });
+    await expect(severityCard).toHaveClass(/lg:col-span-2/);
 
     // 2. Tab 2: 📈 Practice Dynamics
     const practiceTab = page.locator('button', { hasText: /Practice Dynamics/i });
@@ -68,14 +77,50 @@ test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E'
 
     // Check burnout risk section header
     await expect(page.locator('body')).toContainText(/Burnout Risk & Recommended Interventions/i);
+  });
 
-    // Test list expansion toggle if present
-    const showAllBtn = page.locator('button', { hasText: /Show All/i });
-    if (await showAllBtn.first().isVisible().catch(() => false)) {
-      await showAllBtn.first().click();
-      await expect(page.locator('button', { hasText: /Show Less/i }).first()).toBeVisible();
-      await page.locator('button', { hasText: /Show Less/i }).first().click();
-      await expect(showAllBtn.first()).toBeVisible();
+  test('should truncate long lists to 5 items and toggle expansion for Symptom Severity and DSM-5 Distribution', async ({ page }) => {
+    await page.goto('/analytics');
+
+    // 1. Ensure on Clinical Outcomes tab
+    const clinicalTab = page.locator('button', { hasText: /Clinical Outcomes/i });
+    await clinicalTab.click();
+
+    // 2. Find Show All buttons (for Symptom Severity Line Trend & DSM-5 Diagnostic Distribution)
+    const showAllButtons = page.locator('button', { hasText: /Show All/i });
+    await expect(showAllButtons.first()).toBeVisible();
+
+    // 3. Test expansion on the first truncated section
+    await showAllButtons.first().click();
+    const showLessBtn = page.locator('button', { hasText: /Show Less/i }).first();
+    await expect(showLessBtn).toBeVisible();
+
+    // Collapse back
+    await showLessBtn.click();
+    await expect(showAllButtons.first()).toBeVisible();
+  });
+
+  test('should support responsive truncation and expand toggle for Top Clinical Discoveries', async ({ page }) => {
+    await page.goto('/analytics');
+
+    // Ensure on Clinical Outcomes tab
+    const clinicalTab = page.locator('button', { hasText: /Clinical Outcomes/i });
+    await clinicalTab.click();
+
+    await expect(page.locator('body')).toContainText(/Top Clinical Discoveries/i);
+
+    // Look for Clinical Discoveries section Show All button
+    const discoveriesSection = page.locator('div', { hasText: /Top Clinical Discoveries/i }).filter({ has: page.locator('button', { hasText: /Show All/i }) });
+    
+    // If there are more items than maxItems, the toggle button will be rendered
+    const discoveriesToggle = discoveriesSection.locator('button', { hasText: /Show All/i }).first();
+    if (await discoveriesToggle.isVisible()) {
+      await discoveriesToggle.click();
+      await expect(discoveriesSection.locator('button', { hasText: /Show Less/i })).toBeVisible();
+
+      // Collapse back
+      await discoveriesSection.locator('button', { hasText: /Show Less/i }).click();
+      await expect(discoveriesToggle).toBeVisible();
     }
   });
 });

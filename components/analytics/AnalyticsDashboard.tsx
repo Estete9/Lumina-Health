@@ -170,48 +170,9 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
           )}
 
           {/* Charts Row */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Symptom Severity Line Trend Chart */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-800">Symptom Severity Line Trend</h3>
-                  <p className="text-xs text-slate-500">Weekly average GAD-7 / PHQ-9 severity scores</p>
-                </div>
-                <Stethoscope className="h-5 w-5 text-teal-600" />
-              </div>
-
-              <div className="space-y-4">
-                {(clinicalData?.severityTrends || [
-                  { period: 'Week 1', avgSeverityScore: 7.8, severeCount: 8, moderateCount: 4, mildCount: 2, remissionCount: 0 },
-                  { period: 'Week 2', avgSeverityScore: 6.5, severeCount: 5, moderateCount: 6, mildCount: 3, remissionCount: 0 },
-                  { period: 'Week 3', avgSeverityScore: 5.1, severeCount: 3, moderateCount: 7, mildCount: 4, remissionCount: 1 },
-                  { period: 'Week 4', avgSeverityScore: 3.9, severeCount: 1, moderateCount: 5, mildCount: 7, remissionCount: 2 },
-                ]).map((pt, i) => (
-                  <div key={i} className="space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span className="font-medium text-slate-700">{pt.period}</span>
-                      <span className="text-slate-600 font-semibold">{pt.avgSeverityScore} / 10 Avg Score</span>
-                    </div>
-                    <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 flex">
-                      <div 
-                        className="bg-teal-500 h-full transition-all" 
-                        style={{ width: `${(pt.avgSeverityScore / 10) * 100}%` }}
-                      />
-                    </div>
-                    <div className="flex gap-3 text-xs text-slate-500 pt-0.5">
-                      <span>Severe: {pt.severeCount}</span>
-                      <span>Moderate: {pt.moderateCount}</span>
-                      <span>Mild: {pt.mildCount}</span>
-                      <span className="text-teal-600 font-medium">Remission: {pt.remissionCount}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+          <div className="grid gap-6 lg:grid-cols-5">
             {/* DSM-5 Diagnostic Distribution */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-3">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-800">DSM-5 Diagnostic Distribution</h3>
@@ -221,31 +182,122 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
               </div>
 
               <div className="space-y-4">
-                {(clinicalData?.ailmentDistribution || [
-                  { ailment: 'Generalized Anxiety Disorder', count: 8, percentage: 44, avgInitialSeverity: 7.2, avgCurrentSeverity: 3.4, improvementRate: 52.8 },
-                  { ailment: 'Major Depressive Disorder', count: 6, percentage: 33, avgInitialSeverity: 8.0, avgCurrentSeverity: 4.1, improvementRate: 48.7 },
-                  { ailment: 'Panic Disorder', count: 4, percentage: 23, avgInitialSeverity: 6.8, avgCurrentSeverity: 2.9, improvementRate: 57.3 },
-                ]).map((item, index) => (
-                  <div key={index} className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="font-semibold text-slate-800">{item.ailment}</span>
-                      <span className="text-xs font-semibold text-teal-700 bg-teal-100/60 px-2 py-0.5 rounded">
-                        {item.percentage}% ({item.count} patients)
-                      </span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden mb-2">
-                      <div
-                        className="h-full rounded-full bg-teal-600"
-                        style={{ width: `${item.percentage}%` }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-xs text-slate-500">
-                      <span>Initial: {item.avgInitialSeverity} avg score</span>
-                      <span>Current: {item.avgCurrentSeverity} avg score</span>
-                      <span className="text-emerald-600 font-semibold">↓ {item.improvementRate}% improvement</span>
-                    </div>
-                  </div>
-                ))}
+                {(() => {
+                  const items = clinicalData?.ailmentDistribution || [
+                    { ailment: 'Generalized Anxiety Disorder', count: 8, percentage: 44, avgInitialSeverity: 7.2, avgCurrentSeverity: 3.4, improvementRate: 52.8 },
+                    { ailment: 'Major Depressive Disorder', count: 6, percentage: 33, avgInitialSeverity: 8.0, avgCurrentSeverity: 4.1, improvementRate: 48.7 },
+                    { ailment: 'Panic Disorder', count: 4, percentage: 23, avgInitialSeverity: 6.8, avgCurrentSeverity: 2.9, improvementRate: 57.3 },
+                  ];
+                  const displayedItems = expandedLists['ailmentDistribution'] ? items : items.slice(0, 5);
+                  return (
+                    <>
+                      {displayedItems.map((item, index) => (
+                        <div key={index} className="rounded-lg border border-slate-100 bg-slate-50/50 p-3">
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="font-semibold text-slate-800">{item.ailment}</span>
+                            <span className="text-xs font-semibold text-teal-700 bg-teal-100/60 px-2 py-0.5 rounded">
+                              {item.percentage}% ({item.count} patients)
+                            </span>
+                          </div>
+                          <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden mb-2">
+                            <div
+                              className="h-full rounded-full bg-teal-600"
+                              style={{ width: `${item.percentage}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-xs text-slate-500">
+                            <span>Initial: {item.avgInitialSeverity} avg score</span>
+                            <span>Current: {item.avgCurrentSeverity} avg score</span>
+                            <span className="text-emerald-600 font-semibold">↓ {item.improvementRate}% improvement</span>
+                          </div>
+                        </div>
+                      ))}
+                      {items.length > 5 && (
+                        <button 
+                          onClick={() => toggleList('ailmentDistribution')}
+                          className="mt-2 text-xs text-teal-700 hover:text-teal-900 font-medium flex items-center gap-1"
+                        >
+                          {expandedLists['ailmentDistribution'] ? (
+                            <><ChevronUp className="h-3 w-3" /> Show Less</>
+                          ) : (
+                            <><ChevronDown className="h-3 w-3" /> Show All ({items.length})</>
+                          )}
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Symptom Severity Line Trend Chart */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-800">Symptom Severity Line Trend</h3>
+                  <p className="text-xs text-slate-500">Weekly average GAD-7 / PHQ-9 severity scores</p>
+                </div>
+                <Stethoscope className="h-5 w-5 text-teal-600" />
+              </div>
+
+              <div className="space-y-4">
+                {(() => {
+                  const items = clinicalData?.severityTrends || [
+                    { period: 'Week 1', avgSeverityScore: 7.8, severeCount: 8, moderateCount: 4, mildCount: 2, remissionCount: 0 },
+                    { period: 'Week 2', avgSeverityScore: 6.5, severeCount: 5, moderateCount: 6, mildCount: 3, remissionCount: 0 },
+                    { period: 'Week 3', avgSeverityScore: 5.1, severeCount: 3, moderateCount: 7, mildCount: 4, remissionCount: 1 },
+                    { period: 'Week 4', avgSeverityScore: 3.9, severeCount: 1, moderateCount: 5, mildCount: 7, remissionCount: 2 },
+                  ];
+                  const displayedItems = expandedLists['severityTrends'] ? items : items.slice(0, 5);
+                  return (
+                    <>
+                      {displayedItems.map((pt, i) => (
+                        <div key={i} className="space-y-1">
+                          <div className="flex justify-between text-sm">
+                            <span className="font-medium text-slate-700">{pt.period}</span>
+                            <span className="text-slate-600 font-semibold">{pt.avgSeverityScore} / 10</span>
+                          </div>
+                          <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100 flex">
+                            <div 
+                              className="bg-teal-500 h-full transition-all" 
+                              style={{ width: `${(pt.avgSeverityScore / 10) * 100}%` }}
+                            />
+                          </div>
+                          <div className="flex gap-3 text-xs text-slate-500 pt-0.5">
+                            <span className="flex items-center gap-1" title="Severe">
+                              <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+                              {pt.severeCount}
+                            </span>
+                            <span className="flex items-center gap-1" title="Moderate">
+                              <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                              {pt.moderateCount}
+                            </span>
+                            <span className="flex items-center gap-1" title="Mild">
+                              <span className="w-2 h-2 rounded-full bg-sky-400"></span>
+                              {pt.mildCount}
+                            </span>
+                            <span className="flex items-center gap-1 text-teal-600 font-medium" title="Remission">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                              {pt.remissionCount}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {items.length > 5 && (
+                        <button 
+                          onClick={() => toggleList('severityTrends')}
+                          className="mt-2 text-xs text-teal-700 hover:text-teal-900 font-medium flex items-center gap-1"
+                        >
+                          {expandedLists['severityTrends'] ? (
+                            <><ChevronUp className="h-3 w-3" /> Show Less</>
+                          ) : (
+                            <><ChevronDown className="h-3 w-3" /> Show All ({items.length})</>
+                          )}
+                        </button>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
