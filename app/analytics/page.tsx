@@ -1,15 +1,18 @@
-import { getPractitionerAnalytics } from '@/lib/services/analyticsService';
+import { getPractitionerAnalytics, getDecisionAnalyticsHubData } from '@/lib/services/analyticsService';
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 
 export default async function AnalyticsPage() {
-  const { data, error } = await getPractitionerAnalytics();
+  const [analyticsRes, hubRes] = await Promise.all([
+    getPractitionerAnalytics(),
+    getDecisionAnalyticsHubData()
+  ]);
 
-  if (error || !data) {
+  if (analyticsRes.error || !analyticsRes.data || hubRes.error || !hubRes.data) {
     return (
       <div className="flex h-full items-center justify-center p-8">
         <div className="text-center">
           <h2 className="text-lg font-semibold text-rose-600">Error loading analytics</h2>
-          <p className="text-slate-500">{error || 'Unknown error occurred'}</p>
+          <p className="text-slate-500">{analyticsRes.error || hubRes.error || 'Unknown error occurred'}</p>
         </div>
       </div>
     );
@@ -17,7 +20,7 @@ export default async function AnalyticsPage() {
 
   return (
     <div className="p-8 max-w-7xl mx-auto h-full overflow-y-auto">
-      <AnalyticsDashboard data={data} />
+      <AnalyticsDashboard data={analyticsRes.data} hubData={hubRes.data} />
     </div>
   );
 }

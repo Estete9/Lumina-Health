@@ -1,34 +1,48 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Sprint 10: Practitioner Analytics & Progress Overview E2E', () => {
-  test('should navigate to /analytics and render practitioner analytics dashboard', async ({ page }) => {
+test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E', () => {
+  test('should navigate to /analytics and render analytics header and KPI cards', async ({ page }) => {
     await page.goto('/analytics');
 
     await expect(page).toHaveURL(/\/analytics/);
     await expect(page.locator('body')).toContainText(/Practitioner Analytics & Progress Overview/i);
-  });
 
-  test('should render main KPI metric cards on analytics dashboard', async ({ page }) => {
-    await page.goto('/analytics');
-
-    // KPI metric card titles/headings
+    // KPI metric card headings
     await expect(page.locator('body')).toContainText(/Active Caseload/i);
     await expect(page.locator('body')).toContainText(/Completion Rate/i);
     await expect(page.locator('body')).toContainText(/Avg Notes \/ Patient/i);
     await expect(page.locator('body')).toContainText(/Completed Sessions/i);
   });
 
-  test('should render Diagnostic Distribution Breakdown chart & Clinical Discoveries ranking cards', async ({ page }) => {
+  test('should support interactive tab switching between the 3 Category Views', async ({ page }) => {
     await page.goto('/analytics');
 
-    // Diagnostic Distribution section
-    await expect(page.locator('body')).toContainText(/Diagnostic Distribution/i);
+    // 1. Default Tab: 🩺 Clinical Outcomes
+    const clinicalTab = page.locator('button', { hasText: /Clinical Outcomes/i });
+    await expect(clinicalTab).toBeVisible();
+    await clinicalTab.click();
 
-    // Weekly Session Trend section
-    await expect(page.locator('body')).toContainText(/Weekly Session Trend/i);
+    await expect(page.locator('[data-testid="view-clinical-outcomes"]')).toBeVisible();
+    await expect(page.locator('body')).toContainText(/Symptom Severity Line Trend/i);
+    await expect(page.locator('body')).toContainText(/DSM-5 Diagnostic Distribution/i);
 
-    // Top Clinical Discoveries ranking cards section
-    await expect(page.locator('body')).toContainText(/Top Clinical Discoveries/i);
+    // 2. Tab 2: 📈 Practice Dynamics
+    const practiceTab = page.locator('button', { hasText: /Practice Dynamics/i });
+    await expect(practiceTab).toBeVisible();
+    await practiceTab.click();
+
+    await expect(page.locator('[data-testid="view-practice-dynamics"]')).toBeVisible();
+    await expect(page.locator('body')).toContainText(/Treatment Retention Funnel Chart/i);
+    await expect(page.locator('body')).toContainText(/Monthly Attendance & Cancellations/i);
+
+    // 3. Tab 3: ⚡ Caseload & Capacity
+    const caseloadTab = page.locator('button', { hasText: /Caseload & Capacity/i });
+    await expect(caseloadTab).toBeVisible();
+    await caseloadTab.click();
+
+    await expect(page.locator('[data-testid="view-caseload-capacity"]')).toBeVisible();
+    await expect(page.locator('body')).toContainText(/Bandwidth Capacity Dial Gauge/i);
+    await expect(page.locator('body')).toContainText(/Weekly Workload Density Heatmap/i);
   });
 
   test('should allow navigation to Analytics via sidebar link', async ({ page }) => {

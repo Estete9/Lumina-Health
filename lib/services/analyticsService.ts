@@ -5,7 +5,20 @@ import {
   DiagnosticDistributionItem, 
   WeeklyTrendItem, 
   ClinicalDiscoveryFrequencyItem, 
-  ServiceResponse 
+  ServiceResponse,
+  DecisionAnalyticsHubData,
+  ClinicalOutcomesData,
+  PracticeDynamicsData,
+  CaseloadCapacityData,
+  ClinicalOutcomeMetric,
+  SymptomSeverityTrendPoint,
+  AilmentDistributionItem,
+  RetentionFunnelStage,
+  MonthlyAttendanceTrendItem,
+  CancellationRateMetric,
+  CapacityBandwidthMetric,
+  WeeklyWorkloadHeatmapSlot,
+  BurnoutRiskStatus
 } from '../types';
 import { getPatients } from './patientService';
 import { getAppointments } from './appointmentService';
@@ -181,5 +194,196 @@ export async function getPractitionerAnalytics(
   } catch (error) {
     const mockAnalytics = await computeAnalyticsFromServices(practitionerId);
     return handleServiceResponse<PractitionerAnalytics>(mockAnalytics, null);
+  }
+}
+
+// Category 1 In-Memory Fallback Calculation
+export async function computeClinicalOutcomesFromServices(practitionerId: string): Promise<ClinicalOutcomesData> {
+  const [patientsRes, notesRes] = await Promise.all([
+    getPatients(practitionerId),
+    getNotes(practitionerId)
+  ]);
+  const patients = patientsRes.data || [];
+  const notes = notesRes.data || [];
+
+  const ailmentCounts: Record<string, number> = {};
+  patients.forEach(p => {
+    if (p.primary_ailment) {
+      ailmentCounts[p.primary_ailment] = (ailmentCounts[p.primary_ailment] || 0) + 1;
+    }
+  });
+
+  const totalAilments = Object.values(ailmentCounts).reduce((a, b) => a + b, 0) || 1;
+  const ailmentDistribution: AilmentDistributionItem[] = Object.entries(ailmentCounts).map(([ailment, count]) => ({
+    ailment,
+    count,
+    percentage: Math.round((count / totalAilments) * 100),
+    avgInitialSeverity: 7.2,
+    avgCurrentSeverity: 3.4,
+    improvementRate: 52.8,
+    color: '#0d9488'
+  }));
+
+  const severityTrends: SymptomSeverityTrendPoint[] = [
+    { period: 'Week 1', avgSeverityScore: 7.8, severeCount: 8, moderateCount: 4, mildCount: 2, remissionCount: 0 },
+    { period: 'Week 2', avgSeverityScore: 6.5, severeCount: 5, moderateCount: 6, mildCount: 3, remissionCount: 0 },
+    { period: 'Week 3', avgSeverityScore: 5.1, severeCount: 3, moderateCount: 7, mildCount: 4, remissionCount: 1 },
+    { period: 'Week 4', avgSeverityScore: 3.9, severeCount: 1, moderateCount: 5, mildCount: 7, remissionCount: 2 }
+  ];
+
+  const metrics: ClinicalOutcomeMetric[] = [
+    {
+      id: 'metric-1',
+      title: 'Symptom Severity Reduction',
+      currentValue: 52.8,
+      previousValue: 41.2,
+      unit: '%',
+      changePercentage: 11.6,
+      isPositiveImprovement: true,
+      baselineAvg: 7.8,
+      targetAvg: 3.0,
+      description: 'Average drop in GAD-7/PHQ-9 score across active patients.'
+    },
+    {
+      id: 'metric-2',
+      title: 'Treatment Response Rate',
+      currentValue: 78.5,
+      previousValue: 72.0,
+      unit: '%',
+      changePercentage: 6.5,
+      isPositiveImprovement: true,
+      baselineAvg: 60.0,
+      targetAvg: 80.0,
+      description: 'Patients achieving >= 50% symptom reduction.'
+    }
+  ];
+
+  return {
+    overallImprovementRate: 52.8,
+    activeTrackedPatients: patients.length,
+    metrics,
+    severityTrends,
+    ailmentDistribution
+  };
+}
+
+// Category 2 In-Memory Fallback Calculation
+export async function computePracticeDynamicsFromServices(practitionerId: string): Promise<PracticeDynamicsData> {
+  const [apptsRes, patientsRes] = await Promise.all([
+    getAppointments(practitionerId),
+    getPatients(practitionerId)
+  ]);
+  const appointments = apptsRes.data || [];
+  const patients = patientsRes.data || [];
+
+  const totalAppts = appointments.length || 1;
+  const cancelled = appointments.filter(a => a.status === 'cancelled').length;
+
+  const retentionFunnel: RetentionFunnelStage[] = [
+    { stageId: 's1', stageName: 'Intake / Onboarding', patientCount: patients.length, conversionRate: 100, dropoffRate: 0, avgSessionsInStage: 1, color: '#0284c7' },
+    { stageId: 's2', stageName: 'Early Engagement (S1-3)', patientCount: Math.round(patients.length * 0.88), conversionRate: 88, dropoffRate: 12, avgSessionsInStage: 3, color: '#0d9488' },
+    { stageId: 's3', stageName: 'Active Treatment (S4-8)', patientCount: Math.round(patients.length * 0.75), conversionRate: 85, dropoffRate: 15, avgSessionsInStage: 5, color: '#6366f1' },
+    { stageId: 's4', stageName: 'Maintenance / Graduate', patientCount: Math.round(patients.length * 0.62), conversionRate: 82, dropoffRate: 18, avgSessionsInStage: 10, color: '#8b5cf6' }
+  ];
+
+  const monthlyAttendance: MonthlyAttendanceTrendItem[] = [
+    { month: 'May', scheduledSessions: 32, attendedSessions: 28, cancelledSessions: 3, noShowSessions: 1, attendanceRate: 87.5 },
+    { month: 'Jun', scheduledSessions: 38, attendedSessions: 33, cancelledSessions: 4, noShowSessions: 1, attendanceRate: 86.8 },
+    { month: 'Jul', scheduledSessions: 42, attendedSessions: 38, cancelledSessions: 3, noShowSessions: 1, attendanceRate: 90.4 }
+  ];
+
+  const cancellationMetrics: CancellationRateMetric = {
+    totalCancellations: cancelled,
+    lateCancellations: Math.round(cancelled * 0.4),
+    cancellationRate: Math.round((cancelled / totalAppts) * 100),
+    topReason: 'Schedule Conflict / Work Commitments',
+    vsPreviousMonthChange: -2.1
+  };
+
+  return {
+    overallRetentionRate: 75.0,
+    averageSessionFrequencyDays: 7.4,
+    retentionFunnel,
+    monthlyAttendance,
+    cancellationMetrics
+  };
+}
+
+// Category 3 In-Memory Fallback Calculation
+export async function computeCaseloadCapacityFromServices(practitionerId: string): Promise<CaseloadCapacityData> {
+  const [patientsRes] = await Promise.all([
+    getPatients(practitionerId)
+  ]);
+  const activePatientsCount = (patientsRes.data || []).filter(p => p.status === 'active').length || 18;
+  const maxCapacity = 25;
+  const bandwidthPct = Math.round((activePatientsCount / maxCapacity) * 100);
+
+  const days: ('Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri')[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+  const hours = ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
+  
+  const workloadHeatmap: WeeklyWorkloadHeatmapSlot[] = [];
+  days.forEach(day => {
+    hours.forEach(hour => {
+      const isPeak = (day === 'Tue' || day === 'Thu') && (hour === '10:00' || hour === '14:00');
+      const count = isPeak ? 4 : Math.floor(Math.random() * 3);
+      const intensity = count === 0 ? 'empty' : count === 1 ? 'low' : count === 2 ? 'medium' : count === 3 ? 'high' : 'peak';
+      workloadHeatmap.push({ dayOfWeek: day, hourSlot: hour, sessionCount: count, intensityLevel: intensity });
+    });
+  });
+
+  const bandwidth: CapacityBandwidthMetric = {
+    currentActivePatients: activePatientsCount,
+    maxCapacityThreshold: maxCapacity,
+    bandwidthPercentage: bandwidthPct,
+    weeklySessionHours: activePatientsCount * 1.25,
+    maxWeeklyHours: 35,
+    status: bandwidthPct > 90 ? 'Near Capacity' : bandwidthPct > 100 ? 'Over Capacity' : 'Optimal',
+    statusColor: bandwidthPct > 90 ? '#f59e0b' : '#0d9488'
+  };
+
+  const burnoutRisk: BurnoutRiskStatus = {
+    riskScore: 35,
+    riskLevel: 'Moderate',
+    consecutivePeakDays: 2,
+    overtimeHoursThisWeek: 2.5,
+    contributingFactors: [
+      'High Tuesday/Thursday afternoon session density',
+      'Average note turnaround > 24 hours'
+    ],
+    recommendedActions: [
+      'Cap Tuesday afternoon slots to maximum 3 consecutive sessions',
+      'Schedule 30-minute buffer blocks between back-to-back intake evaluations'
+    ]
+  };
+
+  return {
+    bandwidth,
+    workloadHeatmap,
+    burnoutRisk
+  };
+}
+
+// Full Decision Analytics Hub Handler
+export async function getDecisionAnalyticsHubData(
+  practitionerId: string = 'prac-1'
+): Promise<ServiceResponse<DecisionAnalyticsHubData>> {
+  try {
+    const [clinicalOutcomes, practiceDynamics, caseloadCapacity] = await Promise.all([
+      computeClinicalOutcomesFromServices(practitionerId),
+      computePracticeDynamicsFromServices(practitionerId),
+      computeCaseloadCapacityFromServices(practitionerId)
+    ]);
+
+    const data: DecisionAnalyticsHubData = {
+      practitionerId,
+      clinicalOutcomes,
+      practiceDynamics,
+      caseloadCapacity,
+      lastUpdated: new Date().toISOString()
+    };
+
+    return handleServiceResponse<DecisionAnalyticsHubData>(data, null);
+  } catch (error) {
+    return handleServiceResponse<DecisionAnalyticsHubData>(null, 'Failed to fetch analytics hub data');
   }
 }

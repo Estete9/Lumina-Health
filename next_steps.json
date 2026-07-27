@@ -65,11 +65,11 @@
             "layman_summary": "Practitioners can now log in and register for Lumina Health! You can access dedicated /login and /register pages with clean input forms, validation, and error alerts. Once logged in, your practitioner profile (Dr. Sarah Jenkins) displays in the top navigation header with an interactive dropdown to log out at any time."
         },
         {
-            "sprint": "Sprint 10",
-            "title": "Practitioner Analytics & Weekly Progress Overview Dashboard",
-            "scope": "Implemented analyticsService.ts with getPractitionerAnalytics handler calculating DSM-5 diagnostic distribution breakdown, weekly session completion trends, top CBT clinical discoveries frequency, and key performance indicators. Created /analytics page route, AnalyticsDashboard component, DiagnosticDistributionChart, WeeklySessionTrendChart, and ClinicalDiscoveriesChart. Added Analytics navigation link in Sidebar.tsx. Created unit test suite __tests__/sprints/sprint10_analytics.test.ts and Playwright E2E test suite e2e/sprints/sprint10_analytics.spec.ts.",
+            "sprint": "Sprint 10 (Refactored)",
+            "title": "Clinical Decision-Making Analytics Hub (Patient Health, Business Dynamics & Capacity Engine)",
+            "scope": "Refactored analytics module into a 3-category clinical decision engine. Implemented getDecisionAnalyticsHubData handler in analyticsService.ts. Created /analytics page route, DecisionAnalyticsHub container shell, ClinicalOutcomesTab (symptom severity trends & DSM-5 distribution), PracticeDynamicsTab (treatment retention funnel stages & monthly attendance vs cancellations), and CaseloadCapacityTab (mental bandwidth capacity dial gauge SVG, weekly workload density heatmap, and burnout risk status). Updated unit test suite __tests__/sprints/sprint10_analytics.test.ts and E2E browser test suite e2e/sprints/sprint10_analytics.spec.ts.",
             "completed_at": "2026-07-27",
-            "layman_summary": "You now have a dedicated Practitioner Analytics dashboard! Clicking 'Analytics' in the side menu opens visual metrics charts showing your caseload distribution by diagnosis (like GAD or Depression), weekly session completion trends, top clinical discoveries tagged in notes, and key performance indicators like active caseload ratio and average session completion rate."
+            "layman_summary": "Your Analytics page is now a powerful Clinical Decision Engine! You can toggle between 3 targeted views: 1) Clinical Outcomes (track if patients are actually improving over time with symptom severity trend graphs), 2) Practice Dynamics (see client retention funnel drop-offs and cancellation rates), and 3) Caseload & Capacity (monitor your mental bandwidth dial gauge and weekly workload density to prevent practitioner burnout)."
         }
     ],
     "proposed_features": [

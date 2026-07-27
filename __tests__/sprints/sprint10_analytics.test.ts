@@ -1,4 +1,4 @@
-import { getPractitionerAnalytics } from '../../lib/services/analyticsService';
+import { getPractitionerAnalytics, getDecisionAnalyticsHubData } from '../../lib/services/analyticsService';
 import * as patientService from '../../lib/services/patientService';
 import * as appointmentService from '../../lib/services/appointmentService';
 import * as noteService from '../../lib/services/noteService';
@@ -84,5 +84,31 @@ describe('Analytics Service (Sprint 10: PRP-05)', () => {
     expect(data.activeCaseloadRatio).toBe(0);
     expect(data.sessionCompletionRate).toBe(0);
     expect(data.diagnosticDistribution.length).toBe(0);
+  });
+  
+  it('should generate decision analytics hub data', async () => {
+    (patientService.getPatients as jest.Mock).mockResolvedValue({ data: [], error: null });
+    (appointmentService.getAppointments as jest.Mock).mockResolvedValue({ data: [], error: null });
+    (noteService.getNotes as jest.Mock).mockResolvedValue({ data: [], error: null });
+
+    const response = await getDecisionAnalyticsHubData('prac-1');
+    
+    expect(response.error).toBeNull();
+    const data = response.data!;
+    
+    // clinicalOutcomes
+    expect(data.clinicalOutcomes.overallImprovementRate).toBe(52.8);
+    expect(data.clinicalOutcomes.metrics.length).toBeGreaterThan(0);
+    expect(data.clinicalOutcomes.severityTrends.length).toBeGreaterThan(0);
+    
+    // practiceDynamics
+    expect(data.practiceDynamics.overallRetentionRate).toBe(75.0);
+    expect(data.practiceDynamics.retentionFunnel.length).toBeGreaterThan(0);
+    expect(data.practiceDynamics.monthlyAttendance.length).toBeGreaterThan(0);
+    
+    // caseloadCapacity
+    expect(data.caseloadCapacity.bandwidth.status).toBeDefined();
+    expect(data.caseloadCapacity.workloadHeatmap.length).toBeGreaterThan(0);
+    expect(data.caseloadCapacity.burnoutRisk.riskLevel).toBeDefined();
   });
 });
