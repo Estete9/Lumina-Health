@@ -1,18 +1,59 @@
 "use client";
 
-import React from 'react';
-import { usePathname } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
+import { getSession } from '@/lib/services/authService';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const isAuthPage = pathname === '/login' || pathname === '/register';
+
+  useEffect(() => {
+    let isMounted = true;
+    async function checkAuth() {
+      const sessionRes = await getSession();
+      if (!isMounted) return;
+
+      const hasSession = Boolean(sessionRes.data && sessionRes.data.user);
+
+      if (isAuthPage && hasSession) {
+        // Authenticated users shouldn't see login/register; redirect to dashboard
+        router.push('/');
+      } else if (!isAuthPage && !hasSession) {
+        // Unauthenticated users visiting protected routes; redirect to login
+        router.push('/login');
+      }
+
+      setIsCheckingAuth(false);
+    }
+
+    checkAuth();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [pathname, isAuthPage, router]);
 
   if (isAuthPage) {
     return (
       <div className="min-h-screen w-full bg-slate-50">
         {children}
+      </div>
+    );
+  }
+
+  // Brief loading placeholder during initial auth check
+  if (isCheckingAuth) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
+        <div className="flex items-center gap-3 text-slate-500 font-medium text-sm">
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
+          <span>Verifying practice session...</span>
+        </div>
       </div>
     );
   }
