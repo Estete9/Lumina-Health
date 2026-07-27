@@ -60,14 +60,16 @@ export const PracticeDynamicsTab: React.FC<Props> = ({ data }) => {
         {/* Cancellation Metrics Card */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 className="text-base font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-500" />
+            <h3 className="text-base font-semibold text-slate-800 mb-4">
               Cancellation Metrics
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <span className="text-xs text-slate-500">Overall Cancellation Rate</span>
                 <div className="text-2xl font-bold text-slate-800">{data.cancellationMetrics.cancellationRate}%</div>
+                <div className="mt-2 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div className="h-full bg-amber-500 rounded-full" style={{ width: `${Math.min(data.cancellationMetrics.cancellationRate * 5, 100)}%` }} />
+                </div>
               </div>
               <div>
                 <span className="text-xs text-slate-500">Late Cancellations (&lt;24h)</span>
@@ -79,8 +81,7 @@ export const PracticeDynamicsTab: React.FC<Props> = ({ data }) => {
               </div>
             </div>
           </div>
-          <div className="text-xs text-emerald-600 font-medium flex items-center gap-1 mt-4">
-            <TrendingUp className="w-4 h-4" />
+          <div className="text-xs text-emerald-600 font-medium flex items-center mt-4">
             <span>{data.cancellationMetrics.vsPreviousMonthChange}% vs last month</span>
           </div>
         </div>

@@ -14,31 +14,43 @@ export const ClinicalOutcomesTab: React.FC<Props> = ({ data }) => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {data.metrics.map(metric => (
-          <div key={metric.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <div className="flex items-center justify-between text-slate-500 mb-2">
+          <div key={metric.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+            <div className="text-slate-500 mb-2">
               <span className="text-sm font-medium">{metric.title}</span>
-              <Activity className="w-5 h-5 text-teal-600" />
             </div>
-            <div className="text-2xl font-bold text-slate-800">
-              {metric.currentValue}{metric.unit}
-            </div>
-            <div className="flex items-center text-xs mt-2 text-emerald-600 font-medium">
-              <TrendingDown className="w-4 h-4 mr-1" />
-              <span>+{metric.changePercentage}% improvement vs baseline ({metric.baselineAvg})</span>
+            <div>
+              <div className="text-2xl font-bold text-slate-800">
+                {metric.currentValue}{metric.unit}
+              </div>
+              <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-full bg-teal-500 rounded-full" style={{ width: `${Math.min(metric.changePercentage, 100)}%` }} />
+              </div>
+              <div className="flex items-center text-xs mt-2 text-emerald-600 font-medium">
+                <TrendingDown className="w-4 h-4 mr-1" />
+                <span>+{metric.changePercentage}% improvement vs baseline ({metric.baselineAvg})</span>
+              </div>
             </div>
           </div>
         ))}
         {/* Extra Card for Active Tracked Patients to match typical 3-card layout */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
+          <div className="text-slate-500 mb-2">
             <span className="text-sm font-medium">Active Tracked Patients</span>
-            <Activity className="w-5 h-5 text-teal-600" />
           </div>
-          <div className="text-2xl font-bold text-slate-800">
-            {data.activeTrackedPatients}
-          </div>
-          <div className="flex items-center text-xs mt-2 text-slate-500 font-medium">
-            <span>Currently enrolled in outcome tracking</span>
+          <div>
+            <div className="text-2xl font-bold text-slate-800">
+              {data.activeTrackedPatients}
+            </div>
+            <div className="mt-3 flex items-end gap-1 h-6">
+              {[30, 45, 40, 60, 50, 70, 85].map((val, i) => (
+                <div key={i} className="w-full bg-indigo-100 rounded-t-sm" style={{ height: `${val}%` }}>
+                  <div className="w-full bg-indigo-400 rounded-t-sm" style={{ height: '50%' }}></div>
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center text-xs mt-2 text-slate-500 font-medium">
+              <span>Currently enrolled in outcome tracking</span>
+            </div>
           </div>
         </div>
       </div>

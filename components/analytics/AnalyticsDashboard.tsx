@@ -53,51 +53,72 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
       {/* Global Summary KPI Stats Grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Active Caseload Ratio */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between pb-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div className="pb-2">
             <h3 className="text-sm font-medium text-slate-500">Active Caseload</h3>
-            <Users className="h-4 w-4 text-teal-600" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{data.activeCaseloadRatio}%</div>
-          <p className="text-xs text-slate-500 mt-1">
-            {data.activePatients} of {data.totalPatients} active patients
-          </p>
+          <div>
+            <div className="text-2xl font-bold text-slate-900">{data.activeCaseloadRatio}%</div>
+            <div className="mt-3 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-full bg-teal-500 rounded-full" style={{ width: `${data.activeCaseloadRatio}%` }} />
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              {data.activePatients} of {data.totalPatients} active patients
+            </p>
+          </div>
         </div>
 
         {/* Session Completion Rate */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between pb-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div className="pb-2">
             <h3 className="text-sm font-medium text-slate-500">Completion Rate</h3>
-            <CheckCircle2 className="h-4 w-4 text-teal-600" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{data.sessionCompletionRate}%</div>
-          <p className="text-xs text-slate-500 mt-1">
-            Sessions completed
-          </p>
+          <div>
+            <div className="text-2xl font-bold text-slate-900">{data.sessionCompletionRate}%</div>
+            <div className="mt-3 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+              <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${data.sessionCompletionRate}%` }} />
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              Sessions completed
+            </p>
+          </div>
         </div>
 
         {/* Avg Notes / Patient */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between pb-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div className="pb-2">
             <h3 className="text-sm font-medium text-slate-500">Avg Notes / Patient</h3>
-            <FileText className="h-4 w-4 text-teal-600" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{data.avgNotesPerPatient}</div>
-          <p className="text-xs text-slate-500 mt-1">
-            Notes per patient
-          </p>
+          <div>
+            <div className="text-2xl font-bold text-slate-900">{data.avgNotesPerPatient}</div>
+            <div className="mt-3 flex gap-1 h-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className={`h-full flex-1 rounded-sm ${i < Math.floor(data.avgNotesPerPatient) ? 'bg-sky-500' : 'bg-slate-100'}`} />
+              ))}
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              Notes per patient
+            </p>
+          </div>
         </div>
 
         {/* Total Completed Sessions */}
-        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between pb-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
+          <div className="pb-2">
             <h3 className="text-sm font-medium text-slate-500">Completed Sessions</h3>
-            <Calendar className="h-4 w-4 text-teal-600" />
           </div>
-          <div className="text-2xl font-bold text-slate-900">{data.totalSessionsCompleted}</div>
-          <p className="text-xs text-slate-500 mt-1">
-            Total completed
-          </p>
+          <div>
+            <div className="text-2xl font-bold text-slate-900">{data.totalSessionsCompleted}</div>
+            <div className="mt-3 flex items-end gap-1 h-8">
+              {/* Fake sparkline bars */}
+              {[40, 60, 45, 80, 55, 90, 75].map((val, i) => (
+                <div key={i} className="w-full bg-indigo-200 rounded-t-sm" style={{ height: `${val}%` }}></div>
+              ))}
+            </div>
+            <p className="text-xs text-slate-500 mt-2">
+              Total completed
+            </p>
+          </div>
         </div>
       </div>
 

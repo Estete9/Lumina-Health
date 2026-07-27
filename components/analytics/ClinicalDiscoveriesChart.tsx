@@ -8,11 +8,13 @@ export function ClinicalDiscoveriesChart({ data }: { data: ClinicalDiscoveryFreq
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {data.map((item, index) => (
           <div key={index} className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 p-4">
-            <div className="flex items-start justify-between gap-2">
-              <span className="font-medium text-slate-700 break-words">{item.tagOrDiscovery}</span>
+            <div className="flex flex-col items-start gap-1 overflow-hidden w-full">
+              <span className="font-medium text-slate-700 truncate w-full" title={item.tagOrDiscovery}>
+                {item.tagOrDiscovery}
+              </span>
               <span 
                 className={cn(
-                  "inline-flex whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-semibold",
+                  "inline-flex whitespace-nowrap rounded-full px-2 py-0.5 text-[10px] font-semibold mt-1",
                   item.category === 'cbt_insight' && "bg-purple-100 text-purple-700",
                   item.category === 'symptom' && "bg-rose-100 text-rose-700",
                   item.category === 'intervention' && "bg-emerald-100 text-emerald-700"

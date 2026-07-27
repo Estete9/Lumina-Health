@@ -29,8 +29,7 @@ export const CaseloadCapacityTab: React.FC<Props> = ({ data }) => {
         {/* Bandwidth Capacity Meter */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
-              <Gauge className="w-5 h-5 text-teal-600" />
+            <h3 className="text-base font-semibold text-slate-800">
               Practitioner Bandwidth & Capacity
             </h3>
             <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${
@@ -60,8 +59,7 @@ export const CaseloadCapacityTab: React.FC<Props> = ({ data }) => {
         {/* Burnout Risk Card */}
         <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-base font-semibold text-slate-800 flex items-center gap-2">
-              <Flame className="w-5 h-5 text-amber-500" />
+            <h3 className="text-base font-semibold text-slate-800">
               Burnout Risk Index
             </h3>
             <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${
