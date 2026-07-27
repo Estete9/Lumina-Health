@@ -3,7 +3,7 @@ import { createPatient } from '../../lib/services/patientService';
 
 describe('Sprint 5: Clinical Note Creation Unit Tests', () => {
   it('should create structured clinical note with discoveries & homework', async () => {
-    const p = await createPatient({ first_name: 'Elena', last_name: 'Rostova' });
+    const p = await createPatient({ first_name: 'Elena', last_name: 'Rostova', primary_ailment: 'Generalized Anxiety Disorder' });
     const pId = p.data!.id;
 
     const noteRes = await createNote({

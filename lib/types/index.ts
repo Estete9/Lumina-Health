@@ -143,3 +143,38 @@ export interface AuthResponseData {
   user: AuthUser | null;
   session: AuthSession | null;
 }
+
+export interface DiagnosticDistributionItem {
+  ailment: string;
+  count: number;
+  percentage: number;
+  color?: string;
+}
+
+export interface WeeklyTrendItem {
+  dayOrWeek: string;
+  completedSessions: number;
+  scheduledSessions: number;
+  completionRate: number;
+}
+
+export interface ClinicalDiscoveryFrequencyItem {
+  tagOrDiscovery: string;
+  category: 'cbt_insight' | 'symptom' | 'intervention';
+  count: number;
+  percentage: number;
+}
+
+export interface PractitionerAnalytics {
+  practitionerId: string;
+  totalPatients: number;
+  activePatients: number;
+  activeCaseloadRatio: number;
+  totalSessionsCompleted: number;
+  sessionCompletionRate: number;
+  avgNotesPerPatient: number;
+  diagnosticDistribution: DiagnosticDistributionItem[];
+  weeklyTrends: WeeklyTrendItem[];
+  topDiscoveries: ClinicalDiscoveryFrequencyItem[];
+  lastUpdated: string;
+}

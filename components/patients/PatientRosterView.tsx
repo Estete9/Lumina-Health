@@ -37,8 +37,10 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
     return () => window.removeEventListener('patient_status_updated', handleStatusUpdated);
   }, [router]);
 
-  const handlePatientCreated = (newPatient: Patient) => {
-    setPatients((prev) => [newPatient, ...prev]);
+  const handlePatientCreated = (newPatient?: Patient) => {
+    if (newPatient) {
+      setPatients((prev) => [newPatient, ...prev]);
+    }
     setIsAddModalOpen(false);
     router.refresh();
   };

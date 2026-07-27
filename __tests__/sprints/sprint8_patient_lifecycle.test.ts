@@ -2,7 +2,7 @@ import { createPatient, updatePatientStatus, getPatientById } from '../../lib/se
 
 describe('Sprint 8: Patient Status Lifecycle Management Unit Tests', () => {
   it('should update patient status across full lifecycle states', async () => {
-    const p = await createPatient({ first_name: 'Winston', last_name: 'Smith', status: 'active' });
+    const p = await createPatient({ first_name: 'Winston', last_name: 'Smith', status: 'active', primary_ailment: 'Generalized Anxiety Disorder' });
     const pId = p.data!.id;
 
     // Transition to Completed Therapy

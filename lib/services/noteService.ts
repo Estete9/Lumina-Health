@@ -202,3 +202,16 @@ export async function getAllNotes(): Promise<ServiceResponse<ClinicalNote[]>> {
     return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, error);
   }
 }
+
+export async function getNotes(practitionerId?: string): Promise<ServiceResponse<ClinicalNote[]>> {
+  const allNotesRes = await getAllNotes();
+  if (allNotesRes.error || !allNotesRes.data) {
+    return allNotesRes;
+  }
+  if (practitionerId) {
+    const filtered = allNotesRes.data.filter((n) => !n.practitioner_id || n.practitioner_id === practitionerId);
+    return { data: filtered, error: null };
+  }
+  return allNotesRes;
+}
+

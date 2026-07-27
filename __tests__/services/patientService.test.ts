@@ -9,7 +9,8 @@ describe('patientService Unit Tests', () => {
       email: 'john@example.com',
       phone: '123-456-7890',
       date_of_birth: '1990-01-01',
-      status: 'active'
+      status: 'active',
+      primary_ailment: 'Generalized Anxiety Disorder'
     });
     
     expect(created.data).toBeDefined();

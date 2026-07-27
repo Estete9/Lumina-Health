@@ -10,9 +10,8 @@ describe('Sprint 2: Interactive Session Scheduler Unit Tests', () => {
   it('should create a new therapy appointment', async () => {
     const newAppt = await createAppointment({
       patient_id: 'pat-1',
-      start_time: '2026-08-01T10:00:00Z',
-      end_time: '2026-08-01T11:00:00Z',
-      status: 'scheduled',
+      scheduled_at: '2026-08-01T10:00:00Z',
+      duration_minutes: 60,
       notes: 'Initial evaluation session'
     }, 'prac-1');
 
@@ -24,9 +23,8 @@ describe('Sprint 2: Interactive Session Scheduler Unit Tests', () => {
   it('should update appointment status', async () => {
     const newAppt = await createAppointment({
       patient_id: 'pat-1',
-      start_time: '2026-08-02T10:00:00Z',
-      end_time: '2026-08-02T11:00:00Z',
-      status: 'scheduled'
+      scheduled_at: '2026-08-02T10:00:00Z',
+      duration_minutes: 60
     }, 'prac-1');
 
     const apptId = newAppt.data!.id;

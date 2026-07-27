@@ -3,8 +3,8 @@ import { createPatient } from '../../lib/services/patientService';
 
 describe('Sprint 7: Clinical Note Editing & Management Unit Tests', () => {
   it('should update existing clinical note contents', async () => {
-    const p = await createPatient({ first_name: 'Arthur', last_name: 'Dent' });
-    const n = await createNote({ patient_id: p.data!.id, raw_notes: 'Initial session' });
+    const p = await createPatient({ first_name: 'Arthur', last_name: 'Dent', primary_ailment: 'Generalized Anxiety Disorder' });
+    const n = await createNote({ patient_id: p.data!.id, session_date: '2026-07-27', raw_notes: 'Initial session' });
     
     const updated = await updateNote(n.data!.id, { raw_notes: 'Updated progress notes' });
     expect(updated.error).toBeNull();
@@ -12,8 +12,8 @@ describe('Sprint 7: Clinical Note Editing & Management Unit Tests', () => {
   });
 
   it('should soft/hard delete note and exclude it from patient notes history', async () => {
-    const p = await createPatient({ first_name: 'Ford', last_name: 'Prefect' });
-    const n = await createNote({ patient_id: p.data!.id, raw_notes: 'To be erased' });
+    const p = await createPatient({ first_name: 'Ford', last_name: 'Prefect', primary_ailment: 'Generalized Anxiety Disorder' });
+    const n = await createNote({ patient_id: p.data!.id, session_date: '2026-07-27', raw_notes: 'To be erased' });
 
     const noteId = n.data!.id;
     const deleteRes = await deleteNote(noteId);

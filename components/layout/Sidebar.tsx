@@ -9,7 +9,8 @@ import {
   FileText, 
   Settings, 
   HeartPulse,
-  LogOut 
+  LogOut,
+  BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -24,6 +25,7 @@ const navItems: NavItem[] = [
   { name: 'Patient Roster', href: '/patients', icon: Users },
   { name: 'Schedule & Calendar', href: '/calendar', icon: Calendar },
   { name: 'Clinical Notes', href: '/notes', icon: FileText },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
 ];
 
 export function Sidebar() {

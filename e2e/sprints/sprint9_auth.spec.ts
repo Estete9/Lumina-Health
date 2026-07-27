@@ -1,6 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sprint 9: Practitioner Login & Registration Flow E2E', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem('lumina_explicit_logout', 'true');
+      window.localStorage.removeItem('lumina_mock_session');
+    });
+  });
 
   test('should navigate to login page and render login form inputs', async ({ page }) => {
     await page.goto('/login');
