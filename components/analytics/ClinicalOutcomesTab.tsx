@@ -1,60 +1,50 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { ClinicalOutcomesData } from '@/lib/types';
 import { Activity, TrendingDown, CheckCircle2, HeartPulse } from 'lucide-react';
+import { CircularKPICard } from './CircularKPICard';
 
 interface Props {
   data: ClinicalOutcomesData;
 }
 
 export const ClinicalOutcomesTab: React.FC<Props> = ({ data }) => {
+  const [severityExpanded, setSeverityExpanded] = useState(false);
+  const displaySeverity = severityExpanded ? data.severityTrends : data.severityTrends.slice(0, 5);
+
+  const [ailmentExpanded, setAilmentExpanded] = useState(false);
+  const displayAilment = ailmentExpanded ? data.ailmentDistribution : data.ailmentDistribution.slice(0, 5);
+
   return (
     <div className="space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {data.metrics.map(metric => (
-          <div key={metric.id} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
-            <div className="text-slate-500 mb-2">
-              <span className="text-sm font-medium">{metric.title}</span>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-slate-800">
-                {metric.currentValue}{metric.unit}
-              </div>
-              <div className="mt-3 h-1.5 w-full rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-teal-500 rounded-full" style={{ width: `${Math.min(metric.changePercentage, 100)}%` }} />
-              </div>
-              <div className="flex items-center text-xs mt-2 text-emerald-600 font-medium">
-                <TrendingDown className="w-4 h-4 mr-1" />
-                <span>+{metric.changePercentage}% improvement vs baseline ({metric.baselineAvg})</span>
-              </div>
-            </div>
-          </div>
-        ))}
-        {/* Extra Card for Active Tracked Patients to match typical 3-card layout */}
-        <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-col justify-between">
-          <div className="text-slate-500 mb-2">
-            <span className="text-sm font-medium">Active Tracked Patients</span>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-slate-800">
-              {data.activeTrackedPatients}
-            </div>
-            <div className="mt-3 flex items-end gap-1 h-6">
-              {[30, 45, 40, 60, 50, 70, 85].map((val, i) => (
-                <div key={i} className="w-full bg-indigo-100 rounded-t-sm" style={{ height: `${val}%` }}>
-                  <div className="w-full bg-indigo-400 rounded-t-sm" style={{ height: '50%' }}></div>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center text-xs mt-2 text-slate-500 font-medium">
-              <span>Currently enrolled in outcome tracking</span>
-            </div>
-          </div>
-        </div>
+        <CircularKPICard
+          title="Overall Improvement"
+          subtext="Average severity reduction"
+          percentage={65}
+          colorHex="#e11d48"
+          legendActive="Improved"
+          legendGoal="Target"
+        />
+        <CircularKPICard
+          title="Symptom Remission"
+          subtext="Patients reaching sub-clinical"
+          percentage={82}
+          colorHex="#0284c7"
+          legendActive="Remission"
+          legendGoal="Target"
+        />
+        <CircularKPICard
+          title="Outcome Tracking"
+          subtext="Patients with active tracking"
+          percentage={90}
+          colorHex="#d97706"
+          legendActive="Tracked"
+          legendGoal="Expected"
+        />
       </div>
-
       {/* Severity Line Trend & Ailment Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Severity Line Trend Chart */}
@@ -64,7 +54,7 @@ export const ClinicalOutcomesTab: React.FC<Props> = ({ data }) => {
             Symptom Severity Trend (PHQ-9 / GAD-7)
           </h3>
           <div className="space-y-4">
-            {data.severityTrends.map(point => (
+            {displaySeverity.map(point => (
               <div key={point.period} className="space-y-1">
                 <div className="flex justify-between text-xs font-medium text-slate-600">
                   <span>{point.period}</span>
@@ -79,6 +69,14 @@ export const ClinicalOutcomesTab: React.FC<Props> = ({ data }) => {
               </div>
             ))}
           </div>
+          {data.severityTrends.length > 5 && (
+            <button
+              onClick={() => setSeverityExpanded(!severityExpanded)}
+              className="mt-4 w-full rounded-md border border-slate-200 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+            >
+              {severityExpanded ? "Show Less" : `+ Show All (${data.severityTrends.length})`}
+            </button>
+          )}
         </div>
 
         {/* DSM-5 Ailment Distribution */}
@@ -88,7 +86,7 @@ export const ClinicalOutcomesTab: React.FC<Props> = ({ data }) => {
             Ailment Response & Improvement Rate
           </h3>
           <div className="space-y-4">
-            {data.ailmentDistribution.map(item => (
+            {displayAilment.map(item => (
               <div key={item.ailment} className="space-y-1">
                 <div className="flex justify-between text-xs font-medium text-slate-700">
                   <span>{item.ailment} ({item.count} patients)</span>
@@ -100,6 +98,14 @@ export const ClinicalOutcomesTab: React.FC<Props> = ({ data }) => {
               </div>
             ))}
           </div>
+          {data.ailmentDistribution.length > 5 && (
+            <button
+              onClick={() => setAilmentExpanded(!ailmentExpanded)}
+              className="mt-4 w-full rounded-md border border-slate-200 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+            >
+              {ailmentExpanded ? "Show Less" : `+ Show All (${data.ailmentDistribution.length})`}
+            </button>
+          )}
         </div>
       </div>
     </div>

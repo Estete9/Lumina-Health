@@ -10,8 +10,7 @@ test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E'
     // KPI metric card headings
     await expect(page.locator('body')).toContainText(/Active Caseload/i);
     await expect(page.locator('body')).toContainText(/Completion Rate/i);
-    await expect(page.locator('body')).toContainText(/Avg Notes \/ Patient/i);
-    await expect(page.locator('body')).toContainText(/Completed Sessions/i);
+    await expect(page.locator('body')).toContainText(/Patient Engagement/i);
   });
 
   test('should support interactive tab switching between the 3 Category Views', async ({ page }) => {

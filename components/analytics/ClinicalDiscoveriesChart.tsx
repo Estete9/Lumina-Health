@@ -1,12 +1,18 @@
+"use client";
+
+import { useState } from 'react';
 import { ClinicalDiscoveryFrequencyItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 
 export function ClinicalDiscoveriesChart({ data }: { data: ClinicalDiscoveryFrequencyItem[] }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const displayData = isExpanded ? data : data.slice(0, 5);
+
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
       <h3 className="mb-4 text-lg font-semibold text-slate-800">Top Clinical Discoveries</h3>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {data.map((item, index) => (
+        {displayData.map((item, index) => (
           <div key={index} className="flex flex-col gap-2 rounded-lg border border-slate-100 bg-slate-50 p-4">
             <div className="flex flex-col items-start gap-1 overflow-hidden w-full">
               <span className="font-medium text-slate-700 truncate w-full" title={item.tagOrDiscovery}>
@@ -40,6 +46,14 @@ export function ClinicalDiscoveriesChart({ data }: { data: ClinicalDiscoveryFreq
           </div>
         )}
       </div>
+      {data.length > 5 && (
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="mt-4 w-full rounded-md border border-slate-200 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+        >
+          {isExpanded ? "Show Less" : `+ Show All (${data.length})`}
+        </button>
+      )}
     </div>
   );
 }
