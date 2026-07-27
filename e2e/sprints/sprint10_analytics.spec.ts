@@ -54,4 +54,29 @@ test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E'
     await expect(page).toHaveURL(/\/analytics/);
     await expect(page.locator('body')).toContainText(/Practitioner Analytics & Progress Overview/i);
   });
+
+  test('should display circular KPI progress cards and support list expansion/truncation', async ({ page }) => {
+    await page.goto('/analytics');
+
+    // Verify SVG circular progress elements exist
+    const kpiSvgs = page.locator('svg.transform');
+    await expect(kpiSvgs.first()).toBeVisible();
+
+    // Switch to Caseload & Capacity tab
+    const caseloadTab = page.locator('button', { hasText: /Caseload & Capacity/i });
+    await caseloadTab.click();
+
+    // Check burnout risk section header
+    await expect(page.locator('body')).toContainText(/Burnout Risk & Recommended Interventions/i);
+
+    // Test list expansion toggle if present
+    const showAllBtn = page.locator('button', { hasText: /Show All/i });
+    if (await showAllBtn.first().isVisible().catch(() => false)) {
+      await showAllBtn.first().click();
+      await expect(page.locator('button', { hasText: /Show Less/i }).first()).toBeVisible();
+      await page.locator('button', { hasText: /Show Less/i }).first().click();
+      await expect(showAllBtn.first()).toBeVisible();
+    }
+  });
 });
+

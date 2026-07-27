@@ -20,7 +20,9 @@ import {
   Clock, 
   CheckSquare, 
   Filter, 
-  Award 
+  Award,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 interface AnalyticsDashboardProps {
@@ -32,6 +34,11 @@ type AnalyticsCategoryTab = 'clinical' | 'practice' | 'caseload';
 
 export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
   const [activeTab, setActiveTab] = useState<AnalyticsCategoryTab>('clinical');
+  const [expandedLists, setExpandedLists] = useState<Record<string, boolean>>({});
+
+  const toggleList = (listId: string) => {
+    setExpandedLists(prev => ({ ...prev, [listId]: !prev[listId] }));
+  };
 
   const clinicalData = hubData?.clinicalOutcomes;
   const practiceData = hubData?.practiceDynamics;
@@ -132,41 +139,32 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
           {/* Top Outcome Highlights */}
           {clinicalData && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-slate-200 bg-emerald-50/60 p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-emerald-800">Overall Improvement</span>
-                  <Activity className="h-4 w-4 text-emerald-600" />
-                </div>
-                <div className="mt-2 text-2xl font-bold text-emerald-950">
-                  {clinicalData.overallImprovementRate}%
-                </div>
-                <p className="mt-1 text-xs text-emerald-700">Average symptom severity reduction</p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-600">Tracked Patients</span>
-                  <Users className="h-4 w-4 text-slate-600" />
-                </div>
-                <div className="mt-2 text-2xl font-bold text-slate-900">
-                  {clinicalData.activeTrackedPatients}
-                </div>
-                <p className="mt-1 text-xs text-slate-500">Active outcome monitoring</p>
-              </div>
-
+              <CircularKPICard
+                title="Overall Improvement"
+                subtext="Average symptom severity reduction"
+                percentage={clinicalData.overallImprovementRate}
+                colorHex="#059669"
+                legendActive="Improved"
+                legendGoal="Target"
+              />
+              <CircularKPICard
+                title="Tracked Patients"
+                subtext="Active outcome monitoring"
+                percentage={Math.round((clinicalData.activeTrackedPatients / data.totalPatients) * 100)}
+                colorHex="#475569"
+                legendActive="Tracked"
+                legendGoal="Total"
+              />
               {clinicalData.metrics.map(m => (
-                <div key={m.id} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold uppercase text-slate-500">{m.title}</span>
-                    <TrendingUp className="h-4 w-4 text-teal-600" />
-                  </div>
-                  <div className="mt-2 text-2xl font-bold text-slate-900">
-                    {m.currentValue}{m.unit}
-                  </div>
-                  <p className="mt-1 text-xs text-emerald-600 font-medium">
-                    +{m.changePercentage}% vs baseline target ({m.targetAvg}{m.unit})
-                  </p>
-                </div>
+                <CircularKPICard
+                  key={m.id}
+                  title={m.title}
+                  subtext={`+${m.changePercentage}% vs baseline target`}
+                  percentage={Math.min(100, Math.round((m.currentValue / m.targetAvg) * 100))}
+                  colorHex="#0d9488"
+                  legendActive="Current"
+                  legendGoal="Target"
+                />
               ))}
             </div>
           )}
@@ -270,50 +268,39 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
           {/* KPI Metrics */}
           {practiceData && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-500">Overall Retention Rate</span>
-                  <Award className="h-4 w-4 text-sky-600" />
-                </div>
-                <div className="mt-2 text-2xl font-bold text-slate-900">
-                  {practiceData.overallRetentionRate}%
-                </div>
-                <p className="mt-1 text-xs text-slate-500">Patients completing planned protocol</p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-500">Avg Session Cadence</span>
-                  <Clock className="h-4 w-4 text-sky-600" />
-                </div>
-                <div className="mt-2 text-2xl font-bold text-slate-900">
-                  {practiceData.averageSessionFrequencyDays} days
-                </div>
-                <p className="mt-1 text-xs text-slate-500">Mean interval between sessions</p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-500">Cancellation Rate</span>
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                </div>
-                <div className="mt-2 text-2xl font-bold text-slate-900">
-                  {practiceData.cancellationMetrics.cancellationRate}%
-                </div>
-                <p className="mt-1 text-xs text-emerald-600 font-medium">
-                  {practiceData.cancellationMetrics.vsPreviousMonthChange}% vs previous month
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-500">Top Cancellation Reason</span>
-                  <Filter className="h-4 w-4 text-sky-600" />
-                </div>
-                <div className="mt-2 text-sm font-bold text-slate-900 truncate">
+              <CircularKPICard
+                title="Retention Rate"
+                subtext="Patients completing planned protocol"
+                percentage={practiceData.overallRetentionRate}
+                colorHex="#0284c7"
+                legendActive="Retained"
+                legendGoal="Goal"
+              />
+              <CircularKPICard
+                title="Session Cadence"
+                subtext="Mean interval between sessions"
+                percentage={Math.min(100, Math.round((7 / practiceData.averageSessionFrequencyDays) * 100))}
+                colorHex="#0284c7"
+                legendActive="Current"
+                legendGoal="Weekly"
+              />
+              <CircularKPICard
+                title="Cancellation Rate"
+                subtext={`${practiceData.cancellationMetrics.vsPreviousMonthChange}% vs previous month`}
+                percentage={practiceData.cancellationMetrics.cancellationRate}
+                colorHex="#d97706"
+                legendActive="Cancelled"
+                legendGoal="Total"
+              />
+              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-center">
+                <span className="text-xs font-semibold uppercase text-slate-500 mb-2">Top Cancellation Reason</span>
+                <div className="text-lg font-bold text-slate-900 truncate mb-1">
                   {practiceData.cancellationMetrics.topReason}
                 </div>
-                <p className="mt-1 text-xs text-slate-500">
+                <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
+                  <div className="bg-sky-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                </div>
+                <p className="text-xs text-slate-500">
                   {practiceData.cancellationMetrics.lateCancellations} late cancellations (&lt;24h)
                 </p>
               </div>
@@ -412,53 +399,38 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
           {/* KPI Metrics */}
           {caseloadData && (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-500">Bandwidth Status</span>
-                  <Zap className="h-4 w-4 text-amber-500" />
-                </div>
-                <div className="mt-2 text-xl font-bold" style={{ color: caseloadData.bandwidth.statusColor }}>
-                  {caseloadData.bandwidth.status}
-                </div>
-                <p className="mt-1 text-xs text-slate-500">
-                  {caseloadData.bandwidth.bandwidthPercentage}% capacity utilized
-                </p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-500">Active vs Threshold</span>
-                  <Users className="h-4 w-4 text-slate-600" />
-                </div>
-                <div className="mt-2 text-2xl font-bold text-slate-900">
-                  {caseloadData.bandwidth.currentActivePatients} / {caseloadData.bandwidth.maxCapacityThreshold}
-                </div>
-                <p className="mt-1 text-xs text-slate-500">Active caseload limit</p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-500">Weekly Clinical Hours</span>
-                  <Clock className="h-4 w-4 text-slate-600" />
-                </div>
-                <div className="mt-2 text-2xl font-bold text-slate-900">
-                  {caseloadData.bandwidth.weeklySessionHours} hrs
-                </div>
-                <p className="mt-1 text-xs text-slate-500">Max limit: {caseloadData.bandwidth.maxWeeklyHours} hrs/wk</p>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase text-slate-500">Burnout Risk Level</span>
-                  <AlertTriangle className="h-4 w-4 text-rose-500" />
-                </div>
-                <div className="mt-2 text-2xl font-bold text-slate-900">
-                  {caseloadData.burnoutRisk.riskLevel}
-                </div>
-                <p className="mt-1 text-xs text-rose-600 font-medium">
-                  Risk Score: {caseloadData.burnoutRisk.riskScore} / 100
-                </p>
-              </div>
+              <CircularKPICard
+                title="Bandwidth Status"
+                subtext={`${caseloadData.bandwidth.bandwidthPercentage}% capacity utilized`}
+                percentage={caseloadData.bandwidth.bandwidthPercentage}
+                colorHex={caseloadData.bandwidth.statusColor || "#f59e0b"}
+                legendActive="Utilized"
+                legendGoal="Capacity"
+              />
+              <CircularKPICard
+                title="Active vs Threshold"
+                subtext="Active caseload limit"
+                percentage={Math.round((caseloadData.bandwidth.currentActivePatients / caseloadData.bandwidth.maxCapacityThreshold) * 100)}
+                colorHex="#475569"
+                legendActive="Active"
+                legendGoal="Max"
+              />
+              <CircularKPICard
+                title="Weekly Clinical Hours"
+                subtext={`Max limit: ${caseloadData.bandwidth.maxWeeklyHours} hrs/wk`}
+                percentage={Math.round((caseloadData.bandwidth.weeklySessionHours / caseloadData.bandwidth.maxWeeklyHours) * 100)}
+                colorHex="#475569"
+                legendActive="Scheduled"
+                legendGoal="Max"
+              />
+              <CircularKPICard
+                title="Burnout Risk Level"
+                subtext={caseloadData.burnoutRisk.riskLevel}
+                percentage={caseloadData.burnoutRisk.riskScore}
+                colorHex="#e11d48"
+                legendActive="Risk"
+                legendGoal="Max"
+              />
             </div>
           )}
 
@@ -579,10 +551,22 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
                     Contributing Stressors
                   </h4>
                   <ul className="space-y-1 text-xs text-amber-800 list-disc list-inside">
-                    {caseloadData.burnoutRisk.contributingFactors.map((factor, idx) => (
+                    {caseloadData.burnoutRisk.contributingFactors.slice(0, expandedLists['stressors'] ? undefined : 5).map((factor, idx) => (
                       <li key={idx}>{factor}</li>
                     ))}
                   </ul>
+                  {caseloadData.burnoutRisk.contributingFactors.length > 5 && (
+                    <button 
+                      onClick={() => toggleList('stressors')}
+                      className="mt-2 text-xs text-amber-700 hover:text-amber-900 font-medium flex items-center gap-1"
+                    >
+                      {expandedLists['stressors'] ? (
+                        <><ChevronUp className="h-3 w-3" /> Show Less</>
+                      ) : (
+                        <><ChevronDown className="h-3 w-3" /> Show All ({caseloadData.burnoutRisk.contributingFactors.length})</>
+                      )}
+                    </button>
+                  )}
                 </div>
 
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4">
@@ -591,10 +575,22 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
                     Recommended Schedule Adjustments
                   </h4>
                   <ul className="space-y-1 text-xs text-emerald-800 list-disc list-inside">
-                    {caseloadData.burnoutRisk.recommendedActions.map((action, idx) => (
+                    {caseloadData.burnoutRisk.recommendedActions.slice(0, expandedLists['actions'] ? undefined : 5).map((action, idx) => (
                       <li key={idx}>{action}</li>
                     ))}
                   </ul>
+                  {caseloadData.burnoutRisk.recommendedActions.length > 5 && (
+                    <button 
+                      onClick={() => toggleList('actions')}
+                      className="mt-2 text-xs text-emerald-700 hover:text-emerald-900 font-medium flex items-center gap-1"
+                    >
+                      {expandedLists['actions'] ? (
+                        <><ChevronUp className="h-3 w-3" /> Show Less</>
+                      ) : (
+                        <><ChevronDown className="h-3 w-3" /> Show All ({caseloadData.burnoutRisk.recommendedActions.length})</>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>

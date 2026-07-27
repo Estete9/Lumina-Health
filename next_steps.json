@@ -70,6 +70,13 @@
             "scope": "Refactored analytics module into a 3-category clinical decision engine. Implemented getDecisionAnalyticsHubData handler in analyticsService.ts. Created /analytics page route, DecisionAnalyticsHub container shell, ClinicalOutcomesTab (symptom severity trends & DSM-5 distribution), PracticeDynamicsTab (treatment retention funnel stages & monthly attendance vs cancellations), and CaseloadCapacityTab (mental bandwidth capacity dial gauge SVG, weekly workload density heatmap, and burnout risk status). Updated unit test suite __tests__/sprints/sprint10_analytics.test.ts and E2E browser test suite e2e/sprints/sprint10_analytics.spec.ts.",
             "completed_at": "2026-07-27",
             "layman_summary": "Your Analytics page is now a powerful Clinical Decision Engine! You can toggle between 3 targeted views: 1) Clinical Outcomes (track if patients are actually improving over time with symptom severity trend graphs), 2) Practice Dynamics (see client retention funnel drop-offs and cancellation rates), and 3) Caseload & Capacity (monitor your mental bandwidth dial gauge and weekly workload density to prevent practitioner burnout)."
+        },
+        {
+            "sprint": "Sprint 10 Polish",
+            "title": "Analytics Dashboard Visual Refactor & Expansion",
+            "scope": "Refactored the AnalyticsDashboard.tsx UI to use CircularKPICard and other visual progress indicators across the clinical, practice, and caseload tabs. Truncated list items (e.g. Burnout Risk Assessment) to 5 items with an expand/collapse toggle. Replaced text-based KPI metrics and icons with percentage progress bars to match the premium design style.",
+            "completed_at": "2026-07-27",
+            "layman_summary": "We've significantly upgraded the visual experience of the Analytics page! The simple text numbers across all your key performance indicators have been transformed into beautiful circular progress rings and charts. We also made long lists (like the Burnout Risk factors) collapse after 5 items with an 'expand' button, keeping the interface clean and instantly understandable."
         }
     ],
     "proposed_features": [
