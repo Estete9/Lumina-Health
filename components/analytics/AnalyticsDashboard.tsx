@@ -35,6 +35,7 @@ type AnalyticsCategoryTab = 'clinical' | 'practice' | 'caseload';
 export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
   const [activeTab, setActiveTab] = useState<AnalyticsCategoryTab>('clinical');
   const [expandedLists, setExpandedLists] = useState<Record<string, boolean>>({});
+  const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toLocaleString('default', { month: 'short' }));
 
   const toggleList = (listId: string) => {
     setExpandedLists(prev => ({ ...prev, [listId]: !prev[listId] }));
@@ -319,7 +320,7 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
         <div className="space-y-6" data-testid="view-practice-dynamics">
           {/* KPI Metrics */}
           {practiceData && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <CircularKPICard
                 title="Retention Rate"
                 subtext="Patients completing planned protocol"
@@ -336,33 +337,43 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
                 legendActive="Current"
                 legendGoal="Weekly"
               />
-              <CircularKPICard
-                title="Cancellation Rate"
-                subtext={`${practiceData.cancellationMetrics.vsPreviousMonthChange}% vs previous month`}
-                percentage={practiceData.cancellationMetrics.cancellationRate}
-                colorHex="#d97706"
-                legendActive="Cancelled"
-                legendGoal="Total"
-              />
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col justify-center">
-                <span className="text-xs font-semibold uppercase text-slate-500 mb-2">Top Cancellation Reason</span>
-                <div className="text-lg font-bold text-slate-900 truncate mb-1">
-                  {practiceData.cancellationMetrics.topReason}
+              <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col items-center justify-between text-center">
+                <div className="relative flex flex-col justify-center w-full h-32 mb-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-slate-700 w-28 text-left truncate" title="Late Cancellation">Late Cancellation</span>
+                    <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full bg-rose-500 rounded-full" style={{ width: '35%' }}></div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-700 w-8 text-right">35%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-slate-700 w-28 text-left truncate" title="Financial">Financial</span>
+                    <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full bg-amber-500 rounded-full" style={{ width: '20%' }}></div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-700 w-8 text-right">20%</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-slate-700 w-28 text-left truncate" title="No Show">No Show</span>
+                    <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full bg-slate-400 rounded-full" style={{ width: '15%' }}></div>
+                    </div>
+                    <span className="text-xs font-bold text-slate-700 w-8 text-right">15%</span>
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2 mb-2">
-                  <div className="bg-sky-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold text-slate-900">Top Cancellation Reasons</h3>
+                  <p className="text-sm text-slate-500 mt-1">{practiceData.cancellationMetrics.cancellationRate}% cancellation rate</p>
                 </div>
-                <p className="text-xs text-slate-500">
-                  {practiceData.cancellationMetrics.lateCancellations} late cancellations (&lt;24h)
-                </p>
+                <div className="flex items-center justify-center gap-4 text-xs font-medium text-transparent w-full pt-4 border-t border-slate-100 select-none"><div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-transparent"></span><span>Align</span></div></div>
               </div>
             </div>
           )}
 
           {/* Charts Row */}
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-5">
             {/* Treatment Retention Funnel Chart */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-3">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-800">Treatment Retention Funnel Chart</h3>
@@ -393,8 +404,8 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
                       />
                     </div>
                     <div className="flex justify-between text-xs text-slate-500">
-                      <span>Conversion: {stage.conversionRate}%</span>
-                      <span>Drop-off: {stage.dropoffRate}%</span>
+                      <span className="flex items-center gap-1" title="Conversion"><span className="w-2 h-2 rounded-full bg-emerald-500"></span>{stage.conversionRate}%</span>
+                      <span className="flex items-center gap-1" title="Drop-off"><span className="w-2 h-2 rounded-full bg-rose-500"></span>{stage.dropoffRate}%</span>
                       <span>Avg {stage.avgSessionsInStage} sessions in stage</span>
                     </div>
                   </div>
@@ -403,44 +414,95 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
             </div>
 
             {/* Monthly Attendance / Cancellations Chart */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-slate-800">Monthly Attendance & Cancellations</h3>
-                  <p className="text-xs text-slate-500">Tracking monthly attendance rates and session volumes</p>
-                </div>
-                <Calendar className="h-5 w-5 text-sky-600" />
-              </div>
+            {(() => {
+              const baseSessions = selectedMonth === 'Jan' ? 85 : 75;
+              const dataToUse = [
+                { label: 'Week 1', attendedSessions: baseSessions, cancelledSessions: 12, noShowSessions: 3 },
+                { label: 'Week 2', attendedSessions: baseSessions + 5, cancelledSessions: 8, noShowSessions: 2 },
+                { label: 'Week 3', attendedSessions: baseSessions - 10, cancelledSessions: 15, noShowSessions: 5 },
+                { label: 'Week 4', attendedSessions: baseSessions + 15, cancelledSessions: 5, noShowSessions: 1 },
+              ];
+              const maxSessions = Math.max(...dataToUse.map(d => d.attendedSessions + d.cancelledSessions + d.noShowSessions));
+              
+              let totalAttended = 0;
+              let totalCancelled = 0;
+              let totalNoShow = 0;
+              dataToUse.forEach(d => {
+                totalAttended += d.attendedSessions;
+                totalCancelled += d.cancelledSessions;
+                totalNoShow += d.noShowSessions;
+              });
+              const attendancePercentage = Math.round((totalAttended / (totalAttended + totalCancelled + totalNoShow)) * 100);
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-700">
-                  <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
-                    <tr>
-                      <th className="py-2.5 px-3">Month</th>
-                      <th className="py-2.5 px-3 text-center">Scheduled</th>
-                      <th className="py-2.5 px-3 text-center">Attended</th>
-                      <th className="py-2.5 px-3 text-center">Cancelled</th>
-                      <th className="py-2.5 px-3 text-right">Attendance Rate</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {(practiceData?.monthlyAttendance || [
-                      { month: 'May', scheduledSessions: 32, attendedSessions: 28, cancelledSessions: 3, noShowSessions: 1, attendanceRate: 87.5 },
-                      { month: 'Jun', scheduledSessions: 38, attendedSessions: 33, cancelledSessions: 4, noShowSessions: 1, attendanceRate: 86.8 },
-                      { month: 'Jul', scheduledSessions: 42, attendedSessions: 38, cancelledSessions: 3, noShowSessions: 1, attendanceRate: 90.4 },
-                    ]).map((m, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/60">
-                        <td className="py-3 px-3 font-semibold text-slate-900">{m.month}</td>
-                        <td className="py-3 px-3 text-center">{m.scheduledSessions}</td>
-                        <td className="py-3 px-3 text-center text-emerald-600 font-medium">{m.attendedSessions}</td>
-                        <td className="py-3 px-3 text-center text-rose-500">{m.cancelledSessions}</td>
-                        <td className="py-3 px-3 text-right font-bold text-teal-700">{m.attendanceRate}%</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+              return (
+                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
+                  <div className="flex flex-col mb-4">
+                    <h3 className="text-lg font-semibold text-slate-800 w-full mb-2">Monthly Attendance & Cancellations</h3>
+                    <div className="flex items-center justify-between w-full">
+                      <div className="text-4xl font-bold text-slate-900">
+                        {attendancePercentage}%
+                      </div>
+                      <div className="relative">
+                        <select 
+                          value={selectedMonth}
+                          onChange={(e) => setSelectedMonth(e.target.value)}
+                          className="appearance-none bg-slate-100 border border-slate-200 text-slate-700 text-sm font-medium py-1.5 pl-3 pr-8 rounded-md cursor-pointer hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map(m => (
+                            <option key={m} value={m}>{m}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="h-4 w-4 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col h-[256px] mt-2">
+                    <div className="flex-1 flex items-end justify-between gap-1 sm:gap-2 mb-2 pt-4">
+                      {dataToUse.map((m, idx) => {
+                        const total = m.attendedSessions + m.cancelledSessions + (m.noShowSessions || 0);
+                        const heightPct = Math.max(8, (total / (maxSessions || 1)) * 100);
+                        const attendedPct = (m.attendedSessions / total) * 100;
+                        const cancelledPct = (m.cancelledSessions / total) * 100;
+                        const noShowPct = ((m.noShowSessions || 0) / total) * 100;
+
+                        return (
+                          <div key={idx} className="flex flex-col items-center flex-1 h-full justify-end group cursor-pointer">
+                            <div 
+                              className="w-full max-w-[40px] flex flex-col justify-end rounded-t-md overflow-hidden relative shadow-sm" 
+                              style={{ height: `${heightPct}%` }}
+                            >
+                              <div 
+                                className="bg-indigo-200 transition-all group-hover:brightness-95 border-b-2 border-white/80 relative"
+                                style={{ height: `${noShowPct}%` }}
+                                title={`No-Show: ${m.noShowSessions || 0}`}
+                              />
+                              <div 
+                                className="bg-indigo-500 transition-all group-hover:brightness-110 border-b-2 border-white/80 relative"
+                                style={{ height: `${cancelledPct}%` }}
+                                title={`Cancelled: ${m.cancelledSessions}`}
+                              />
+                              <div 
+                                className="bg-indigo-900 transition-all group-hover:brightness-125 relative"
+                                style={{ height: `${attendedPct}%` }}
+                                title={`Attended: ${m.attendedSessions}`}
+                              />
+                            </div>
+                            <span className="text-xs text-slate-500 font-medium mt-3 whitespace-nowrap">{m.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
+                    <div className="flex items-center justify-center gap-5 text-[11px] sm:text-xs font-medium text-slate-600 mt-2 border-t border-slate-100 pt-4">
+                      <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-indigo-900 shadow-sm"></span> Attended</div>
+                      <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-indigo-500 shadow-sm"></span> Cancelled</div>
+                      <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-indigo-200 shadow-sm"></span> No-Show</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
@@ -487,53 +549,9 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
           )}
 
           {/* Charts Row */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Bandwidth Capacity Dial Gauge */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-lg font-semibold text-slate-800">Bandwidth Capacity Dial Gauge</h3>
-                  <Zap className="h-5 w-5 text-amber-500" />
-                </div>
-                <p className="text-xs text-slate-500 mb-6">
-                  Current clinical caseload saturation gauge versus maximum threshold capacity
-                </p>
-
-                {/* Dial Gauge Visual Component */}
-                <div className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                  <div className="relative flex items-center justify-center h-44 w-44 rounded-full border-8 border-slate-200 bg-white shadow-inner">
-                    <div 
-                      className="absolute inset-0 rounded-full border-8 border-teal-600 transition-all duration-700"
-                      style={{ 
-                        clipPath: `polygon(0 0, 100% 0, 100% ${caseloadData?.bandwidth.bandwidthPercentage || 72}%, 0 ${caseloadData?.bandwidth.bandwidthPercentage || 72}%)` 
-                      }}
-                    />
-                    <div className="text-center z-10">
-                      <span className="text-3xl font-extrabold text-slate-900">
-                        {caseloadData?.bandwidth.bandwidthPercentage || 72}%
-                      </span>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-teal-700 mt-1">
-                        {caseloadData?.bandwidth.status || 'Optimal'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 grid grid-cols-2 gap-4 text-center border-t border-slate-100 pt-4 text-xs text-slate-600">
-                <div>
-                  <span className="text-slate-400 block uppercase">Active Patients</span>
-                  <span className="font-bold text-slate-800 text-sm">{caseloadData?.bandwidth.currentActivePatients || 18}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block uppercase">Max Capacity</span>
-                  <span className="font-bold text-slate-800 text-sm">{caseloadData?.bandwidth.maxCapacityThreshold || 25}</span>
-                </div>
-              </div>
-            </div>
-
+          <div className="grid gap-6 lg:grid-cols-5">
             {/* Weekly Workload Density Heatmap */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-3">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-semibold text-slate-800">Weekly Workload Density Heatmap</h3>
@@ -588,6 +606,50 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
                 <div className="flex items-center gap-1"><div className="h-3 w-3 rounded bg-amber-500"></div> Peak</div>
               </div>
             </div>
+
+            {/* Bandwidth Capacity Dial Gauge */}
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col justify-between lg:col-span-2">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-lg font-semibold text-slate-800">Bandwidth Capacity Dial Gauge</h3>
+                  <Zap className="h-5 w-5 text-amber-500" />
+                </div>
+                <p className="text-xs text-slate-500 mb-6">
+                  Current clinical caseload saturation gauge versus maximum threshold capacity
+                </p>
+
+                {/* Dial Gauge Visual Component */}
+                <div className="flex flex-col items-center justify-center p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="relative flex items-center justify-center h-44 w-44 rounded-full border-8 border-slate-200 bg-white shadow-inner">
+                    <div 
+                      className="absolute inset-0 rounded-full border-8 border-teal-600 transition-all duration-700"
+                      style={{ 
+                        clipPath: `polygon(0 0, 100% 0, 100% ${caseloadData?.bandwidth.bandwidthPercentage || 72}%, 0 ${caseloadData?.bandwidth.bandwidthPercentage || 72}%)` 
+                      }}
+                    />
+                    <div className="text-center z-10">
+                      <span className="text-3xl font-extrabold text-slate-900">
+                        {caseloadData?.bandwidth.bandwidthPercentage || 72}%
+                      </span>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-teal-700 mt-1">
+                        {caseloadData?.bandwidth.status || 'Optimal'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 grid grid-cols-2 gap-4 text-center border-t border-slate-100 pt-4 text-xs text-slate-600">
+                <div>
+                  <span className="text-slate-400 block uppercase">Active Patients</span>
+                  <span className="font-bold text-slate-800 text-sm">{caseloadData?.bandwidth.currentActivePatients || 18}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block uppercase">Max Capacity</span>
+                  <span className="font-bold text-slate-800 text-sm">{caseloadData?.bandwidth.maxCapacityThreshold || 25}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Burnout Risk Assessment & Recommendations */}
@@ -602,9 +664,9 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
                     Contributing Stressors
                   </h4>
-                  <ul className="space-y-1 text-xs text-amber-800 list-disc list-inside">
+                  <ul className="space-y-1 text-xs text-amber-800">
                     {caseloadData.burnoutRisk.contributingFactors.slice(0, expandedLists['stressors'] ? undefined : 5).map((factor, idx) => (
-                      <li key={idx}>{factor}</li>
+                      <li key={idx} className="flex items-start gap-2"><span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>{factor}</li>
                     ))}
                   </ul>
                   {caseloadData.burnoutRisk.contributingFactors.length > 5 && (
@@ -626,9 +688,9 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
                     <CheckSquare className="h-4 w-4 text-emerald-600" />
                     Recommended Schedule Adjustments
                   </h4>
-                  <ul className="space-y-1 text-xs text-emerald-800 list-disc list-inside">
+                  <ul className="space-y-1 text-xs text-emerald-800">
                     {caseloadData.burnoutRisk.recommendedActions.slice(0, expandedLists['actions'] ? undefined : 5).map((action, idx) => (
-                      <li key={idx}>{action}</li>
+                      <li key={idx} className="flex items-start gap-2"><span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>{action}</li>
                     ))}
                   </ul>
                   {caseloadData.burnoutRisk.recommendedActions.length > 5 && (

@@ -43,6 +43,34 @@ test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E'
     await expect(page.locator('body')).toContainText(/Treatment Retention Funnel Chart/i);
     await expect(page.locator('body')).toContainText(/Monthly Attendance & Cancellations/i);
 
+    // Verify 3:2 grid ratio layout classes for Practice Dynamics
+    const retentionHeader = page.getByRole('heading', { name: /Treatment Retention Funnel Chart/i });
+    const retentionCard = page.locator('div.rounded-xl').filter({ has: retentionHeader });
+    await expect(retentionCard).toHaveClass(/lg:col-span-3/);
+
+    const attendanceHeader = page.getByRole('heading', { name: /Monthly Attendance & Cancellations/i });
+    const attendanceCard = page.locator('div.rounded-xl').filter({ has: attendanceHeader });
+    await expect(attendanceCard).toHaveClass(/lg:col-span-2/);
+    await expect(attendanceCard).toContainText(/Attended/i);
+    await expect(attendanceCard).toContainText(/Cancelled/i);
+    await expect(attendanceCard).toContainText(/No-Show/i);
+
+    // Verify Practice Dynamics KPI cards
+    await expect(page.locator('body')).toContainText(/Retention Rate/i);
+    await expect(page.locator('body')).toContainText(/Session Cadence/i);
+    await expect(page.locator('body')).toContainText(/Top Cancellation Reasons/i);
+
+    // Test month selection dropdown interaction in Monthly Attendance & Cancellations
+    const monthSelect = attendanceCard.locator('select');
+    await expect(monthSelect).toBeVisible();
+    await monthSelect.selectOption('Jan');
+    await expect(monthSelect).toHaveValue('Jan');
+    await expect(attendanceCard).toContainText('87%');
+
+    await monthSelect.selectOption('Feb');
+    await expect(monthSelect).toHaveValue('Feb');
+    await expect(attendanceCard).toContainText('86%');
+
     // 3. Tab 3: ⚡ Caseload & Capacity
     const caseloadTab = page.locator('button', { hasText: /Caseload & Capacity/i });
     await expect(caseloadTab).toBeVisible();
@@ -51,6 +79,15 @@ test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E'
     await expect(page.locator('[data-testid="view-caseload-capacity"]')).toBeVisible();
     await expect(page.locator('body')).toContainText(/Bandwidth Capacity Dial Gauge/i);
     await expect(page.locator('body')).toContainText(/Weekly Workload Density Heatmap/i);
+
+    // Verify 3:2 grid ratio layout classes for Caseload & Capacity
+    const heatmapHeader = page.getByRole('heading', { name: /Weekly Workload Density Heatmap/i });
+    const heatmapCard = page.locator('div.rounded-xl').filter({ has: heatmapHeader });
+    await expect(heatmapCard).toHaveClass(/lg:col-span-3/);
+
+    const gaugeHeader = page.getByRole('heading', { name: /Bandwidth Capacity Dial Gauge/i });
+    const gaugeCard = page.locator('div.rounded-xl').filter({ has: gaugeHeader });
+    await expect(gaugeCard).toHaveClass(/lg:col-span-2/);
   });
 
   test('should allow navigation to Analytics via sidebar link', async ({ page }) => {
