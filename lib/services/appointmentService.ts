@@ -1,6 +1,6 @@
 import { createClient } from '../supabase/client';
 import { handleServiceResponse } from './baseService';
-import { Appointment, AppointmentStatus, CreateAppointmentInput, ServiceResponse } from '../types';
+import { Appointment, AppointmentStatus, CreateAppointmentInput, ServiceResponse, TelehealthProvider } from '../types';
 import { MOCK_APPOINTMENTS } from './mockData';
 
 let inMemoryAppointments: Appointment[] = [...MOCK_APPOINTMENTS];
@@ -76,6 +76,8 @@ export async function createAppointment(input: CreateAppointmentInput, practitio
     status: 'scheduled',
     session_type: input.session_type,
     notes: input.notes || '',
+    telehealth_url: input.telehealth_url || null,
+    telehealth_provider: input.telehealth_provider || null,
     created_at: new Date().toISOString(),
   };
 
@@ -99,7 +101,9 @@ export async function createAppointment(input: CreateAppointmentInput, practitio
         duration_minutes: input.duration_minutes,
         status: 'scheduled',
         session_type: input.session_type,
-        notes: input.notes
+        notes: input.notes,
+        telehealth_url: input.telehealth_url,
+        telehealth_provider: input.telehealth_provider
       })
       .select()
       .single();
@@ -134,6 +138,46 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
     const { data, error } = await supabase
       .from('appointments')
       .update({ status })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error || !data) {
+      return { data: inMemoryAppointments[index] || null, error: null };
+    }
+
+    return handleServiceResponse<Appointment>(data as Appointment, null);
+  } catch (error) {
+    return { data: inMemoryAppointments[index] || null, error: null };
+  }
+}
+
+export async function updateAppointmentTelehealth(
+  id: string,
+  telehealthUrl: string | null,
+  telehealthProvider?: TelehealthProvider | null
+): Promise<ServiceResponse<Appointment>> {
+  const index = inMemoryAppointments.findIndex((a) => a.id === id);
+  if (index !== -1) {
+    inMemoryAppointments[index] = {
+      ...inMemoryAppointments[index],
+      telehealth_url: telehealthUrl,
+      telehealth_provider: telehealthProvider || null
+    };
+  }
+
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    return { data: inMemoryAppointments[index] || null, error: null };
+  }
+
+  try {
+    const supabase = createClient();
+    if (!supabase) {
+      return { data: inMemoryAppointments[index] || null, error: null };
+    }
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ telehealth_url: telehealthUrl, telehealth_provider: telehealthProvider || null })
       .eq('id', id)
       .select()
       .single();

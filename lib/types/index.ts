@@ -44,6 +44,8 @@ export interface CreatePatientInput {
 
 export type AppointmentStatus = 'scheduled' | 'completed' | 'cancelled' | 'no_show';
 
+export type TelehealthProvider = 'meet' | 'zoom' | 'teams' | 'custom';
+
 export interface Appointment {
   id: string;
   patient_id: string;
@@ -56,6 +58,8 @@ export interface Appointment {
   updated_at?: string;
   patient_name?: string;
   session_type?: string;
+  telehealth_url?: string | null;
+  telehealth_provider?: TelehealthProvider | null;
 }
 
 export interface CreateAppointmentInput {
@@ -65,6 +69,14 @@ export interface CreateAppointmentInput {
   session_type?: string;
   notes?: string;
   patient_name?: string;
+  telehealth_url?: string;
+  telehealth_provider?: TelehealthProvider;
+}
+
+export interface UpdateAppointmentTelehealthInput {
+  id: string;
+  telehealth_url: string | null;
+  telehealth_provider?: TelehealthProvider | null;
 }
 
 export interface ClinicalNote {

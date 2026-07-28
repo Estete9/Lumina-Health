@@ -3,6 +3,7 @@
 import { Appointment } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { Video } from 'lucide-react';
 
 export function UpcomingAppointments({ appointments }: { appointments: Appointment[] }) {
   const router = useRouter();
@@ -31,16 +32,30 @@ export function UpcomingAppointments({ appointments }: { appointments: Appointme
                     {apt.session_type} • {timeString} ({apt.duration_minutes} min)
                   </p>
                 </div>
-                <span
-                  className={cn(
-                    'rounded-full px-2.5 py-1 text-xs font-semibold capitalize',
-                    isCompleted
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-teal-100 text-teal-800'
+                <div className="flex items-center gap-3">
+                  {apt.telehealth_url && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(apt.telehealth_url!, '_blank');
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-700 rounded-lg shadow-sm transition-colors"
+                    >
+                      <Video className="w-3.5 h-3.5" />
+                      Join Call
+                    </button>
                   )}
-                >
-                  {apt.status}
-                </span>
+                  <span
+                    className={cn(
+                      'rounded-full px-2.5 py-1 text-xs font-semibold capitalize',
+                      isCompleted
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-teal-100 text-teal-800'
+                    )}
+                  >
+                    {apt.status}
+                  </span>
+                </div>
               </div>
             );
           })

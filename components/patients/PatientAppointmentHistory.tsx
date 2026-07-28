@@ -1,6 +1,6 @@
 import React from 'react';
 import { Appointment } from '@/lib/types';
-import { Clock, Calendar as CalendarIcon, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, Calendar as CalendarIcon, CheckCircle, XCircle, Video } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PatientAppointmentHistoryProps {
@@ -48,7 +48,10 @@ export function PatientAppointmentHistory({ appointments }: PatientAppointmentHi
                   <CalendarIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-slate-900">{apt.session_type}</h4>
+                  <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    {apt.session_type}
+                    {apt.telehealth_url && <Video className="w-3.5 h-3.5 text-teal-600" />}
+                  </h4>
                   <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span>

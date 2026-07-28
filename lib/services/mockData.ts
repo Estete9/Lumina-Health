@@ -134,6 +134,8 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     status: 'scheduled',
     session_type: 'Individual CBT',
     notes: 'Focus on panic trigger exposure homework review.',
+    telehealth_url: 'https://meet.google.com/lum-health-elena',
+    telehealth_provider: 'meet',
     created_at: getRelativeDateISO(-2)
   },
   {
@@ -146,6 +148,8 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     status: 'scheduled',
     session_type: 'Behavioral Activation',
     notes: 'Review weekly activity schedule compliance.',
+    telehealth_url: 'https://zoom.us/j/9876543210',
+    telehealth_provider: 'zoom',
     created_at: getRelativeDateISO(-2)
   },
   {

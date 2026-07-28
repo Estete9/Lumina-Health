@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Appointment, Patient, AppointmentStatus } from '@/lib/types';
 import { updateAppointmentStatus } from '@/lib/services/appointmentService';
 import { NewAppointmentModal } from './NewAppointmentModal';
-import { Calendar as CalendarIcon, Clock, MapPin, Video, Plus, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, MapPin, Video, Plus, CheckCircle, XCircle, Copy, ExternalLink, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface CalendarViewProps {
@@ -17,6 +17,8 @@ const HOURS = [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
 export function CalendarView({ initialAppointments, patients }: CalendarViewProps) {
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
   
   const currentDate = new Date();
   
@@ -54,6 +56,12 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
         prev.map((apt) => (apt.id === id ? { ...apt, status: newStatus } : apt))
       );
     }
+  };
+
+  const handleCopyLink = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   return (
@@ -159,6 +167,7 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                             <div>
                               <div className="flex items-center justify-between font-semibold text-slate-900 truncate">
                                 <span className="truncate">{apt.patient_name || 'Client Session'}</span>
+                                {apt.telehealth_url && <Video className="w-3.5 h-3.5 text-teal-600 shrink-0 ml-1" />}
                               </div>
                               <p className="text-[11px] text-slate-600 truncate mt-0.5">
                                 {apt.session_type}
@@ -174,6 +183,12 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                             
                             {/* Action Buttons */}
                             <div className="flex items-center gap-1 mt-1 justify-end">
+                              <button
+                                onClick={() => setSelectedAppointment(apt)}
+                                className="px-2 py-1 text-[10px] font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded"
+                              >
+                                Details
+                              </button>
                               {!isCompleted && !isCancelled && (
                                 <button
                                   onClick={() => handleStatusUpdate(apt.id, 'completed')}
@@ -214,6 +229,76 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
           window.location.reload();
         }}
       />
+
+      {/* Appointment Detail Modal */}
+      {selectedAppointment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-slate-50 text-slate-600 rounded-xl">
+                  <CalendarIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
+                  <p className="text-xs text-slate-500">{new Date(selectedAppointment.scheduled_at).toLocaleString()}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedAppointment(null)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-500 block mb-1">Patient</label>
+                <div className="text-sm font-medium text-slate-900">{selectedAppointment.patient_name}</div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 block mb-1">Session Type</label>
+                <div className="text-sm text-slate-800">{selectedAppointment.session_type}</div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-slate-500 block mb-1">Duration</label>
+                <div className="text-sm text-slate-800">{selectedAppointment.duration_minutes} minutes</div>
+              </div>
+              {selectedAppointment.notes && (
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 block mb-1">Notes</label>
+                  <div className="text-sm text-slate-800">{selectedAppointment.notes}</div>
+                </div>
+              )}
+              
+              {selectedAppointment.telehealth_url && (
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="text-xs font-semibold text-slate-500 block mb-2">Telehealth Session</label>
+                  <div className="flex flex-col gap-2">
+                    <a
+                      href={selectedAppointment.telehealth_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-medium transition-colors"
+                    >
+                      <Video className="w-4 h-4" />
+                      Join {selectedAppointment.telehealth_provider === 'meet' ? 'Google Meet' : selectedAppointment.telehealth_provider === 'zoom' ? 'Zoom' : selectedAppointment.telehealth_provider === 'teams' ? 'MS Teams' : 'Video Call'}
+                    </a>
+                    <button
+                      onClick={() => handleCopyLink(selectedAppointment.telehealth_url!)}
+                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-medium transition-colors"
+                    >
+                      {copiedLink ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                      {copiedLink ? 'Link Copied!' : 'Copy Meeting Link'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

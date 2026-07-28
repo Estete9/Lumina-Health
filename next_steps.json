@@ -140,23 +140,44 @@
             "scope": "Dynamically calculated the overall attendance percentage based on the selected month's mock data and rendered it in the chart header, replacing the raw session count. Increased the CSS height constraint on the Monthly Attendance stacked bar chart container by roughly 30% (h-[256px]) to improve vertical data legibility.",
             "completed_at": "2026-07-27",
             "layman_summary": "The Practice Dynamics tab has received its final polishing touches! The Monthly Attendance chart now displays your actual dynamic attendance percentage in the header instead of raw session numbers. We also increased the vertical height of the stacked bars by 30%, giving the entire chart significantly more breathing room!"
+        },
+        {
+            "sprint": "Sprint 11",
+            "title": "Telehealth / Video Meeting Link Integration & Launch Pad",
+            "scope": "Added `telehealth_url` and `telehealth_provider` fields to the backend `Appointment` interface. Updated `appointmentService.ts` to support saving telehealth metadata. Built UI integration into `NewAppointmentModal` for capturing Zoom/Meet links, and deployed dynamic 'Join Call' buttons directly into the dashboard timeline, calendar blocks, and patient appointment history tables.",
+            "completed_at": "2026-07-28",
+            "layman_summary": "We've fully integrated telehealth directly into your practice workflow! You can now attach Zoom, Google Meet, or Microsoft Teams links right when you schedule an appointment. Even better, sleek 'Join Call' buttons now appear across your main dashboard, calendar, and patient histories—allowing you to jump into back-to-back virtual sessions with a single click."
         }
     ],
     "proposed_features": [
         {
+            "id": "PRP-07",
+            "title": "Automated Session Reminders & Patient Notification Hub",
+            "scope": "Introduces automated email/SMS reminders for upcoming appointments and a central notification center for tracking sent alerts.",
+            "phase": "Phase 1 - MVP"
+        },
+        {
+            "id": "PRP-09",
+            "title": "Secure Practitioner Messaging & Care Team Chat",
+            "scope": "Provides a secure, internal chat module for practitioners and staff to communicate safely regarding practice updates and care coordination.",
+            "phase": "Phase 1 - MVP"
+        }
+    ],
+    "pending_options": [
+        {
             "id": "PRP-04",
             "title": "Clinical Summary Report & Chart Export Hub",
             "scope": "Adds printable clinical progress summaries and downloadable patient record exports for clinical reviews and care coordination.",
-            "phase": "Phase 1 - MVP"
+            "phase": "Phase 1 - MVP",
+            "status": "Backlog"
         },
         {
             "id": "PRP-06",
             "title": "Multi-Practitioner Practice Role Access & Audit Logs",
             "scope": "Introduces staff roles (Admin vs. Practitioner) and immutable event logs for compliance-ready patient data access tracking.",
-            "phase": "Phase 1 - MVP"
-        }
-    ],
-    "pending_options": [
+            "phase": "Phase 1 - MVP",
+            "status": "Backlog"
+        },
         {
             "id": "PND-03",
             "title": "AI-Assisted Clinical Pattern Recognition",

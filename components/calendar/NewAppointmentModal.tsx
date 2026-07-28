@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { Patient } from '@/lib/types';
 import { createAppointment } from '@/lib/services/appointmentService';
-import { X, Calendar as CalendarIcon, CheckCircle2 } from 'lucide-react';
+import { X, Calendar as CalendarIcon, CheckCircle2, Video } from 'lucide-react';
+import { TelehealthProvider } from '@/lib/types';
 
 interface NewAppointmentModalProps {
   isOpen: boolean;
@@ -24,6 +25,9 @@ export function NewAppointmentModal({ isOpen, onClose, patients, onSuccess }: Ne
   const [timeStr, setTimeStr] = useState('10:00');
   const [duration, setDuration] = useState(50);
   const [notes, setNotes] = useState('');
+  const [enableTelehealth, setEnableTelehealth] = useState(false);
+  const [telehealthProvider, setTelehealthProvider] = useState<TelehealthProvider>('meet');
+  const [telehealthUrl, setTelehealthUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -44,7 +48,9 @@ export function NewAppointmentModal({ isOpen, onClose, patients, onSuccess }: Ne
       scheduled_at: scheduledAt,
       duration_minutes: duration,
       session_type: sessionType,
-      notes: notes
+      notes: notes,
+      telehealth_url: enableTelehealth && telehealthUrl ? telehealthUrl : undefined,
+      telehealth_provider: enableTelehealth ? telehealthProvider : undefined,
     }, 'prac-1');
 
     setLoading(false);
@@ -163,6 +169,53 @@ export function NewAppointmentModal({ isOpen, onClose, patients, onSuccess }: Ne
               placeholder="e.g. Review anxiety exposure ladder homework..."
               className="w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800 placeholder-slate-400 focus:border-teal-500 focus:bg-white focus:outline-none"
             />
+          </div>
+
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Video className="w-4 h-4 text-slate-500" />
+                <label className="text-sm font-semibold text-slate-800">Enable Telehealth Video Link</label>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input 
+                  type="checkbox" 
+                  className="sr-only peer"
+                  checked={enableTelehealth}
+                  onChange={(e) => setEnableTelehealth(e.target.checked)}
+                />
+                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-500"></div>
+              </label>
+            </div>
+            
+            {enableTelehealth && (
+              <div className="grid grid-cols-3 gap-3 pt-2">
+                <div className="col-span-1">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Provider</label>
+                  <select
+                    value={telehealthProvider}
+                    onChange={(e) => setTelehealthProvider(e.target.value as TelehealthProvider)}
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-teal-500 focus:outline-none"
+                  >
+                    <option value="meet">Google Meet</option>
+                    <option value="zoom">Zoom</option>
+                    <option value="teams">MS Teams</option>
+                    <option value="custom">Custom Link</option>
+                  </select>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">Meeting URL</label>
+                  <input
+                    type="url"
+                    value={telehealthUrl}
+                    onChange={(e) => setTelehealthUrl(e.target.value)}
+                    placeholder="https://"
+                    className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:border-teal-500 focus:outline-none"
+                    required={enableTelehealth}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
