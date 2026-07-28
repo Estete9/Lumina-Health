@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Appointment, Patient, AppointmentStatus } from '@/lib/types';
 import { updateAppointmentStatus } from '@/lib/services/appointmentService';
 import { NewAppointmentModal } from './NewAppointmentModal';
@@ -19,6 +20,13 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [copiedLink, setCopiedLink] = useState(false);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams?.get('new') === 'true') {
+      setIsModalOpen(true);
+    }
+  }, [searchParams]);
   
   const currentDate = new Date();
   
@@ -66,27 +74,7 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
 
   return (
     <div className="flex flex-col h-[calc(100vh-5rem)] gap-4">
-      {/* Calendar Header Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-teal-50 text-teal-700 rounded-2xl border border-teal-100">
-            <CalendarIcon className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-xs text-slate-500">Weekly Calendar View</p>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white font-medium text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Book New Session</span>
-          </button>
-        </div>
-      </div>
 
       {/* Main Calendar View Container */}
       <div className="flex-1 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
@@ -231,8 +219,14 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
           .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())[0];
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200">
+          <div 
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4"
+            onClick={() => setSelectedAppointment(null)}
+          >
+            <div 
+              className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-slate-50 text-slate-600 rounded-xl">

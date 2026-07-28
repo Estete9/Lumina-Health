@@ -154,6 +154,20 @@
             "scope": "Injected a persistent Floating Action Button into AppLayout to trigger routing to the calendar scheduling view. Removed redundant headers from CalendarView. Removed explicit 'Details' buttons from appointment cards, making the entire card clickable. Upgraded the details modal to dynamically search and inject previous session notes for the patient directly into the modal.",
             "completed_at": "2026-07-28",
             "layman_summary": "We've made prepping for sessions incredibly fast. You can now click anywhere on a booked calendar card to open it, and we've upgraded the modal to automatically surface the notes from the patient's previous session alongside your video links! Plus, there is now a global 'Book' button anchored to the bottom right of every screen so you can schedule instantly from anywhere."
+        },
+        {
+            "sprint": "Sprint 11 Polish 2",
+            "title": "Calendar Modal Query Parameter Routing",
+            "scope": "Implemented `useSearchParams` listener in `CalendarView.tsx` to automatically trigger the `NewAppointmentModal` state to open when the `?new=true` parameter is present in the URL path. This fully connects the global FAB button logic.",
+            "completed_at": "2026-07-28",
+            "layman_summary": "We've wired up the global 'Book' button! No matter what page you are on, clicking that button will seamlessly drop you into the calendar view and instantly pop open the new appointment modal."
+        },
+        {
+            "sprint": "Sprint 11 Polish 3",
+            "title": "Calendar Modal Click-Outside Dismissal",
+            "scope": "Added `onClick` dismissal logic to the appointment details modal backdrop overlay in `CalendarView.tsx`, while enforcing `stopPropagation` on the modal container to prevent accidental closures while interacting with the modal contents.",
+            "completed_at": "2026-07-28",
+            "layman_summary": "We've added a highly-requested UX upgrade to the calendar! You can now instantly close the session details modal simply by clicking anywhere in the dark background outside of the card."
         }
     ],
     "proposed_features": [

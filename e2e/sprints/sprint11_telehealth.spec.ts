@@ -5,10 +5,10 @@ test.describe('Sprint 11: Telehealth / Video Meeting Link Integration E2E', () =
     // 1. Navigate to Calendar page
     await page.goto('/calendar');
     await expect(page).toHaveURL(/\/calendar/);
-    await expect(page.locator('body')).toContainText(/Weekly Calendar View|Session Schedule/i);
+    await expect(page.locator('body')).toContainText(/Calendar|Schedule/i);
 
     // 2. Open New Appointment Modal
-    const bookBtn = page.locator('button', { hasText: /Book New Session|New Appointment|Schedule Session/i });
+    const bookBtn = page.locator('button', { hasText: /Book New Session|New Appointment|Schedule Session|^Book$/i });
     await expect(bookBtn).toBeVisible();
     await bookBtn.click();
 
@@ -68,7 +68,7 @@ test.describe('Sprint 11: Telehealth / Video Meeting Link Integration E2E', () =
 
   test('should render Telehealth video icon and open details modal on appointment card click', async ({ page }) => {
     await page.goto('/calendar');
-    await expect(page.locator('body')).toContainText(/Weekly Calendar View|Session Schedule/i);
+    await expect(page.locator('body')).toContainText(/Calendar|Schedule/i);
     
     // Check for appointment card clickability in Calendar view
     const aptCard = page.locator('div', { hasText: /Individual CBT|Exposure|Clinical Assessment/i }).first();
