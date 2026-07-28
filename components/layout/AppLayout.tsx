@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Header } from '@/components/layout/Header';
 import { getSession } from '@/lib/services/authService';
+import { Plus } from 'lucide-react';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -69,6 +70,15 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </main>
       </div>
+      
+      {/* Global Booking FAB */}
+      <button
+        onClick={() => router.push('/calendar?new=true')}
+        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white px-5 py-3 rounded-full shadow-lg hover:shadow-xl transition-all"
+      >
+        <Plus className="w-5 h-5" />
+        <span className="font-medium">Book</span>
+      </button>
     </div>
   );
 }

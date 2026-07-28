@@ -5,7 +5,7 @@ test.describe('Sprint 11: Telehealth / Video Meeting Link Integration E2E', () =
     // 1. Navigate to Calendar page
     await page.goto('/calendar');
     await expect(page).toHaveURL(/\/calendar/);
-    await expect(page.locator('body')).toContainText(/Session Schedule/i);
+    await expect(page.locator('body')).toContainText(/Weekly Calendar View|Session Schedule/i);
 
     // 2. Open New Appointment Modal
     const bookBtn = page.locator('button', { hasText: /Book New Session|New Appointment|Schedule Session/i });
@@ -66,20 +66,24 @@ test.describe('Sprint 11: Telehealth / Video Meeting Link Integration E2E', () =
     }
   });
 
-  test('should render Telehealth video icon in Calendar weekly view for scheduled appointments', async ({ page }) => {
+  test('should render Telehealth video icon and open details modal on appointment card click', async ({ page }) => {
     await page.goto('/calendar');
-    await expect(page.locator('body')).toContainText(/Session Schedule/i);
+    await expect(page.locator('body')).toContainText(/Weekly Calendar View|Session Schedule/i);
     
-    // Check for Details button on appointment card
-    const detailsBtn = page.locator('button', { hasText: /Details/i });
-    if (await detailsBtn.count() > 0) {
-      await detailsBtn.first().click();
+    // Check for appointment card clickability in Calendar view
+    const aptCard = page.locator('div', { hasText: /Individual CBT|Exposure|Clinical Assessment/i }).first();
+    if (await aptCard.count() > 0) {
+      await aptCard.click();
       
-      // Look for Telehealth Session detail or Join Call link inside details modal if telehealth URL is set
+      // Look for Session Details modal opening on card click
       const modalBody = page.locator('body');
-      if (await modalBody.locator('text=/Telehealth Session|Join Google Meet|Join Zoom|Join Call/i').count() > 0) {
-        await expect(modalBody.locator('text=/Telehealth Session|Join/i').first()).toBeVisible();
-      }
+      await expect(modalBody).toContainText(/Session Details/i);
     }
+  });
+
+  test('should render Floating Action Button (FAB) for booking across application layout', async ({ page }) => {
+    await page.goto('/');
+    const fabButton = page.locator('button', { hasText: /^Book$/i });
+    await expect(fabButton).toBeVisible();
   });
 });

@@ -147,6 +147,13 @@
             "scope": "Added `telehealth_url` and `telehealth_provider` fields to the backend `Appointment` interface. Updated `appointmentService.ts` to support saving telehealth metadata. Built UI integration into `NewAppointmentModal` for capturing Zoom/Meet links, and deployed dynamic 'Join Call' buttons directly into the dashboard timeline, calendar blocks, and patient appointment history tables.",
             "completed_at": "2026-07-28",
             "layman_summary": "We've fully integrated telehealth directly into your practice workflow! You can now attach Zoom, Google Meet, or Microsoft Teams links right when you schedule an appointment. Even better, sleek 'Join Call' buttons now appear across your main dashboard, calendar, and patient histories—allowing you to jump into back-to-back virtual sessions with a single click."
+        },
+        {
+            "sprint": "Sprint 11 Polish 1",
+            "title": "Global Booking FAB & Seamless Session Details",
+            "scope": "Injected a persistent Floating Action Button into AppLayout to trigger routing to the calendar scheduling view. Removed redundant headers from CalendarView. Removed explicit 'Details' buttons from appointment cards, making the entire card clickable. Upgraded the details modal to dynamically search and inject previous session notes for the patient directly into the modal.",
+            "completed_at": "2026-07-28",
+            "layman_summary": "We've made prepping for sessions incredibly fast. You can now click anywhere on a booked calendar card to open it, and we've upgraded the modal to automatically surface the notes from the patient's previous session alongside your video links! Plus, there is now a global 'Book' button anchored to the bottom right of every screen so you can schedule instantly from anywhere."
         }
     ],
     "proposed_features": [

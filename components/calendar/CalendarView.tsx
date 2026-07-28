@@ -73,7 +73,6 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
             <CalendarIcon className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-900">Session Schedule</h1>
             <p className="text-xs text-slate-500">Weekly Calendar View</p>
           </div>
         </div>
@@ -156,8 +155,9 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                         return (
                           <div
                             key={apt.id}
+                            onClick={() => setSelectedAppointment(apt)}
                             className={cn(
-                              'p-2 mb-1 rounded-lg border text-xs shadow-sm flex flex-col justify-between h-full transition-all hover:shadow-md',
+                              'p-2 mb-1 rounded-lg border text-xs shadow-sm flex flex-col justify-between h-full transition-all hover:shadow-md cursor-pointer hover:border-teal-300',
                               apt.status === 'scheduled' && 'bg-teal-50 border-teal-200 text-teal-950 hover:bg-teal-100/80',
                               apt.status === 'completed' && 'bg-emerald-50 border-emerald-200 text-emerald-950 hover:bg-emerald-100/80',
                               apt.status === 'cancelled' && 'bg-rose-50 border-rose-200 text-rose-950 opacity-75 line-through hover:bg-rose-100/80',
@@ -183,15 +183,9 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                             
                             {/* Action Buttons */}
                             <div className="flex items-center gap-1 mt-1 justify-end">
-                              <button
-                                onClick={() => setSelectedAppointment(apt)}
-                                className="px-2 py-1 text-[10px] font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 rounded"
-                              >
-                                Details
-                              </button>
                               {!isCompleted && !isCancelled && (
                                 <button
-                                  onClick={() => handleStatusUpdate(apt.id, 'completed')}
+                                  onClick={(e) => { e.stopPropagation(); handleStatusUpdate(apt.id, 'completed'); }}
                                   className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
                                   title="Mark Completed"
                                 >
@@ -200,7 +194,7 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                               )}
                               {!isCancelled && (
                                 <button
-                                  onClick={() => handleStatusUpdate(apt.id, 'cancelled')}
+                                  onClick={(e) => { e.stopPropagation(); handleStatusUpdate(apt.id, 'cancelled'); }}
                                   className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
                                   title="Cancel Session"
                                 >
@@ -231,74 +225,87 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
       />
 
       {/* Appointment Detail Modal */}
-      {selectedAppointment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-slate-50 text-slate-600 rounded-xl">
-                  <CalendarIcon className="w-5 h-5" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
-                  <p className="text-xs text-slate-500">{new Date(selectedAppointment.scheduled_at).toLocaleString()}</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setSelectedAppointment(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-500 block mb-1">Patient</label>
-                <div className="text-sm font-medium text-slate-900">{selectedAppointment.patient_name}</div>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-500 block mb-1">Session Type</label>
-                <div className="text-sm text-slate-800">{selectedAppointment.session_type}</div>
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-slate-500 block mb-1">Duration</label>
-                <div className="text-sm text-slate-800">{selectedAppointment.duration_minutes} minutes</div>
-              </div>
-              {selectedAppointment.notes && (
-                <div>
-                  <label className="text-xs font-semibold text-slate-500 block mb-1">Notes</label>
-                  <div className="text-sm text-slate-800">{selectedAppointment.notes}</div>
-                </div>
-              )}
-              
-              {selectedAppointment.telehealth_url && (
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="text-xs font-semibold text-slate-500 block mb-2">Telehealth Session</label>
-                  <div className="flex flex-col gap-2">
-                    <a
-                      href={selectedAppointment.telehealth_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-medium transition-colors"
-                    >
-                      <Video className="w-4 h-4" />
-                      Join {selectedAppointment.telehealth_provider === 'meet' ? 'Google Meet' : selectedAppointment.telehealth_provider === 'zoom' ? 'Zoom' : selectedAppointment.telehealth_provider === 'teams' ? 'MS Teams' : 'Video Call'}
-                    </a>
-                    <button
-                      onClick={() => handleCopyLink(selectedAppointment.telehealth_url!)}
-                      className="flex items-center justify-center gap-2 w-full py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-medium transition-colors"
-                    >
-                      {copiedLink ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                      {copiedLink ? 'Link Copied!' : 'Copy Meeting Link'}
-                    </button>
+      {selectedAppointment && (() => {
+        const previousApt = appointments
+          .filter((a) => a.patient_id === selectedAppointment.patient_id && a.status === 'completed' && new Date(a.scheduled_at) < new Date(selectedAppointment.scheduled_at))
+          .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())[0];
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+            <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl border border-slate-200">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-slate-50 text-slate-600 rounded-xl">
+                    <CalendarIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">Session Details</h2>
+                    <p className="text-xs text-slate-500">{new Date(selectedAppointment.scheduled_at).toLocaleString()}</p>
                   </div>
                 </div>
-              )}
+                <button 
+                  onClick={() => setSelectedAppointment(null)}
+                  className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 block mb-1">Patient</label>
+                  <div className="text-sm font-medium text-slate-900">{selectedAppointment.patient_name}</div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 block mb-1">Session Type</label>
+                  <div className="text-sm text-slate-800">{selectedAppointment.session_type}</div>
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-slate-500 block mb-1">Duration</label>
+                  <div className="text-sm text-slate-800">{selectedAppointment.duration_minutes} minutes</div>
+                </div>
+                {selectedAppointment.notes && (
+                  <div>
+                    <label className="text-xs font-semibold text-slate-500 block mb-1">Notes</label>
+                    <div className="text-sm text-slate-800">{selectedAppointment.notes}</div>
+                  </div>
+                )}
+                
+                <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
+                  <label className="text-xs font-semibold text-slate-500 block mb-1">Previous Session Notes</label>
+                  <div className="text-sm text-slate-700 italic">
+                    {previousApt?.notes ? previousApt.notes : "No previous session notes found"}
+                  </div>
+                </div>
+                
+                {selectedAppointment.telehealth_url && (
+                  <div className="pt-4 border-t border-slate-100">
+                    <label className="text-xs font-semibold text-slate-500 block mb-2">Telehealth Session</label>
+                    <div className="flex flex-col gap-2">
+                      <a
+                        href={selectedAppointment.telehealth_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-sm font-medium transition-colors"
+                      >
+                        <Video className="w-4 h-4" />
+                        Join {selectedAppointment.telehealth_provider === 'meet' ? 'Google Meet' : selectedAppointment.telehealth_provider === 'zoom' ? 'Zoom' : selectedAppointment.telehealth_provider === 'teams' ? 'MS Teams' : 'Video Call'}
+                      </a>
+                      <button
+                        onClick={() => handleCopyLink(selectedAppointment.telehealth_url!)}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-sm font-medium transition-colors"
+                      >
+                        {copiedLink ? <CheckCircle className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                        {copiedLink ? 'Link Copied!' : 'Copy Meeting Link'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }
