@@ -7,15 +7,16 @@ import { Video } from 'lucide-react';
 
 export function UpcomingAppointments({ appointments }: { appointments: Appointment[] }) {
   const router = useRouter();
+  const activeAppointments = appointments.filter(apt => apt.status !== 'cancelled');
 
   return (
     <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <h2 className="text-lg font-semibold text-slate-800 mb-4">Today's Appointment Schedule</h2>
       <div className="space-y-3">
-        {appointments.length === 0 ? (
+        {activeAppointments.length === 0 ? (
           <p className="text-sm text-slate-500">No appointments scheduled for today.</p>
         ) : (
-          appointments.map((apt) => {
+          activeAppointments.map((apt) => {
             const isCompleted = apt.status === 'completed';
             const date = new Date(apt.scheduled_at);
             const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -27,8 +28,8 @@ export function UpcomingAppointments({ appointments }: { appointments: Appointme
                 onClick={() => router.push(`/patients/${apt.patient_id}`)}
               >
                 <div>
-                  <p className="font-medium text-slate-800">Session with {apt.patient_name || 'Unknown Patient'}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className={cn("font-medium text-slate-800", isCompleted && "opacity-75 line-through")}>Session with {apt.patient_name || 'Unknown Patient'}</p>
+                  <p className={cn("text-xs text-slate-500", isCompleted && "opacity-75 line-through")}>
                     {apt.session_type} • {timeString} ({apt.duration_minutes} min)
                   </p>
                 </div>

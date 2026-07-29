@@ -8,7 +8,9 @@ interface PatientAppointmentHistoryProps {
 }
 
 export function PatientAppointmentHistory({ appointments }: PatientAppointmentHistoryProps) {
-  if (appointments.length === 0) {
+  const activeAppointments = appointments.filter((apt) => apt.status !== 'cancelled');
+
+  if (activeAppointments.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center shadow-sm">
         <p className="text-slate-500 text-sm">No appointment history found for this patient.</p>
@@ -21,12 +23,12 @@ export function PatientAppointmentHistory({ appointments }: PatientAppointmentHi
       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
         <h2 className="text-base font-bold text-slate-900">Session & Appointment History</h2>
         <span className="text-xs text-slate-500 font-medium bg-slate-100 px-3 py-1 rounded-full">
-          {appointments.length} Total Sessions
+          {activeAppointments.length} Total Sessions
         </span>
       </div>
 
       <div className="space-y-3">
-        {appointments.map((apt) => {
+        {activeAppointments.map((apt) => {
           const isCompleted = apt.status === 'completed';
           const isCancelled = apt.status === 'cancelled';
           const dateObj = new Date(apt.scheduled_at);
@@ -48,11 +50,11 @@ export function PatientAppointmentHistory({ appointments }: PatientAppointmentHi
                   <CalendarIcon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                  <h4 className={cn("flex items-center gap-2 text-sm font-semibold text-slate-900", isCompleted && "opacity-75 line-through")}>
                     {apt.session_type}
                     {apt.telehealth_url && <Video className="w-3.5 h-3.5 text-teal-600" />}
                   </h4>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
+                  <div className={cn("flex items-center gap-2 text-xs text-slate-500 mt-0.5", isCompleted && "opacity-75 line-through")}>
                     <Clock className="w-3.5 h-3.5 text-slate-400" />
                     <span>
                       {dateObj.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at{' '}
@@ -60,7 +62,7 @@ export function PatientAppointmentHistory({ appointments }: PatientAppointmentHi
                     </span>
                   </div>
                   {apt.notes && (
-                    <p className="text-xs text-slate-500 italic mt-1 font-mono">
+                    <p className={cn("text-xs text-slate-500 italic mt-1 font-mono", isCompleted && "opacity-75 line-through")}>
                       "{apt.notes}"
                     </p>
                   )}

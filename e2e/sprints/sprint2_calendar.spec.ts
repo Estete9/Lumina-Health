@@ -12,4 +12,25 @@ test.describe('Sprint 2: Session Scheduler & Calendar E2E', () => {
       await expect(page.locator('body')).toContainText(/Schedule|Client/i);
     }
   });
+
+  test('should allow toggling completion status and undoing completion on calendar appointments', async ({ page }) => {
+    await page.goto('/calendar');
+    
+    // Look for completion toggle button by title ("Mark Completed" or "Undo Completion")
+    const toggleBtn = page.locator('button[title="Mark Completed"], button[title="Undo Completion"]').first();
+    if (await toggleBtn.count() > 0) {
+      const initialTitle = await toggleBtn.getAttribute('title');
+      await toggleBtn.click();
+      
+      // Verify that after click, the title toggles to the opposite action
+      const newTitle = await toggleBtn.getAttribute('title');
+      expect(newTitle).not.toEqual(initialTitle);
+
+      // Click again to undo / revert status
+      await toggleBtn.click();
+      const revertedTitle = await toggleBtn.getAttribute('title');
+      expect(revertedTitle).toEqual(initialTitle);
+    }
+  });
 });
+

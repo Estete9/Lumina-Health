@@ -122,6 +122,7 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                 {/* 7 Day Columns for this Hour */}
                 {weekDays.map((day, dayIdx) => {
                   const cellAppointments = appointments.filter((apt) => {
+                    if (apt.status === 'cancelled') return false;
                     const aptDate = new Date(apt.scheduled_at);
                     return (
                       aptDate.getDate() === day.getDate() &&
@@ -147,7 +148,7 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                             className={cn(
                               'p-2 mb-1 rounded-lg border text-xs shadow-sm flex flex-col justify-between h-full transition-all hover:shadow-md cursor-pointer hover:border-teal-300',
                               apt.status === 'scheduled' && 'bg-teal-50 border-teal-200 text-teal-950 hover:bg-teal-100/80',
-                              apt.status === 'completed' && 'bg-emerald-50 border-emerald-200 text-emerald-950 hover:bg-emerald-100/80',
+                              apt.status === 'completed' && 'bg-emerald-50 border-emerald-200 text-emerald-950 hover:bg-emerald-100/80 opacity-75 line-through',
                               apt.status === 'cancelled' && 'bg-rose-50 border-rose-200 text-rose-950 opacity-75 line-through hover:bg-rose-100/80',
                               apt.status === 'no_show' && 'bg-amber-50 border-amber-200 text-amber-950 hover:bg-amber-100/80'
                             )}
@@ -171,11 +172,16 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                             
                             {/* Action Buttons */}
                             <div className="flex items-center gap-1 mt-1 justify-end">
-                              {!isCompleted && !isCancelled && (
+                              {!isCancelled && (
                                 <button
-                                  onClick={(e) => { e.stopPropagation(); handleStatusUpdate(apt.id, 'completed'); }}
-                                  className="p-1 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
-                                  title="Mark Completed"
+                                  onClick={(e) => { e.stopPropagation(); handleStatusUpdate(apt.id, isCompleted ? 'scheduled' : 'completed'); }}
+                                  className={cn(
+                                    "p-1 rounded transition-colors",
+                                    isCompleted 
+                                      ? "text-emerald-600 bg-emerald-100 hover:bg-emerald-200" 
+                                      : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+                                  )}
+                                  title={isCompleted ? "Undo Completion" : "Mark Completed"}
                                 >
                                   <CheckCircle className="w-3.5 h-3.5" />
                                 </button>
