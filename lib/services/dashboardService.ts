@@ -1,9 +1,11 @@
+'use server';
+
 import { PractitionerDashboardStats, ServiceResponse } from '../types';
 import { getPatients } from './patientService';
 import { getAppointments } from './appointmentService';
 import { getNotes } from './noteService';
 
-export async function getDashboardStats(practitionerId: string = 'prac-1'): Promise<ServiceResponse<PractitionerDashboardStats>> {
+export async function getDashboardStats(practitionerId?: string): Promise<ServiceResponse<PractitionerDashboardStats>> {
   const [patientsRes, appointmentsRes, notesRes] = await Promise.all([
     getPatients(practitionerId),
     getAppointments(practitionerId),

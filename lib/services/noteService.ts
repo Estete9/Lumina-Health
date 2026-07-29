@@ -1,4 +1,6 @@
-import { createClient } from '../supabase/client';
+'use server';
+
+import { createClient } from '../supabase/server';
 import { handleServiceResponse } from './baseService';
 import { ClinicalNote, CreateNoteInput, ServiceResponse } from '../types';
 import { MOCK_CLINICAL_NOTES } from './mockData';
@@ -8,7 +10,7 @@ let inMemoryNotes: ClinicalNote[] = [...MOCK_CLINICAL_NOTES];
 export async function getNotesByPatientId(patientId: string): Promise<ServiceResponse<ClinicalNote[]>> {
   const filtered = inMemoryNotes.filter((n) => n.patient_id === patientId);
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<ClinicalNote[]>(filtered, null);
 
   const { data, error } = await supabase
@@ -21,11 +23,20 @@ export async function getNotesByPatientId(patientId: string): Promise<ServiceRes
   return handleServiceResponse<ClinicalNote[]>(data as ClinicalNote[], null);
 }
 
-export async function createNote(input: CreateNoteInput, practitionerId: string = 'prac-1'): Promise<ServiceResponse<ClinicalNote>> {
+export async function createNote(input: CreateNoteInput, practitionerId?: string): Promise<ServiceResponse<ClinicalNote>> {
+  const supabase = await createClient();
+  if (!supabase) return handleServiceResponse<ClinicalNote>(null as any, 'Client not initialized');
+
+  let targetId = practitionerId;
+  if (!targetId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    targetId = user?.id;
+  }
+
   const newNote: ClinicalNote = {
     id: `note-${Date.now()}`,
     patient_id: input.patient_id,
-    practitioner_id: practitionerId,
+    practitioner_id: targetId || 'prac-1',
     session_date: input.session_date || new Date().toISOString(),
     discoveries: input.discoveries || [],
     daily_actions: input.daily_actions || [],
@@ -37,14 +48,13 @@ export async function createNote(input: CreateNoteInput, practitionerId: string 
 
   inMemoryNotes.unshift(newNote);
 
-  const supabase = createClient();
   if (!supabase) return handleServiceResponse<ClinicalNote>(newNote, null);
 
   const { data, error } = await supabase
     .from('clinical_notes')
     .insert({
       patient_id: input.patient_id,
-      practitioner_id: practitionerId,
+      practitioner_id: targetId || 'prac-1',
       session_date: input.session_date,
       discoveries: input.discoveries || [],
       daily_actions: input.daily_actions || [],
@@ -70,7 +80,7 @@ export async function updateNote(id: string, input: Partial<CreateNoteInput>): P
     updatedInMemory = inMemoryNotes[index];
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) {
     if (updatedInMemory) return handleServiceResponse<ClinicalNote>(updatedInMemory, null);
     return handleServiceResponse<ClinicalNote>(null, 'Note not found');
@@ -96,7 +106,7 @@ export async function deleteNote(id: string): Promise<ServiceResponse<boolean>> 
     inMemoryNotes.splice(index, 1);
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<boolean>(true, null);
 
   const { error } = await supabase
@@ -109,7 +119,7 @@ export async function deleteNote(id: string): Promise<ServiceResponse<boolean>> 
 }
 
 export async function getAllNotes(): Promise<ServiceResponse<ClinicalNote[]>> {
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
 
   const { data, error } = await supabase
@@ -122,12 +132,19 @@ export async function getAllNotes(): Promise<ServiceResponse<ClinicalNote[]>> {
 }
 
 export async function getNotes(practitionerId?: string): Promise<ServiceResponse<ClinicalNote[]>> {
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
 
+  let targetId = practitionerId;
+  if (!targetId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) targetId = user.id;
+    else return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
+  }
+
   let query = supabase.from('clinical_notes').select('*').order('created_at', { ascending: false });
-  if (practitionerId) {
-    query = query.eq('practitioner_id', practitionerId);
+  if (targetId) {
+    query = query.eq('practitioner_id', targetId);
   }
 
   const { data, error } = await query;

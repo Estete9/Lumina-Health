@@ -1,18 +1,27 @@
-import { createClient } from '../supabase/client';
+'use server';
+
+import { createClient } from '../supabase/server';
 import { handleServiceResponse } from './baseService';
 import { Appointment, AppointmentStatus, CreateAppointmentInput, ServiceResponse, TelehealthProvider } from '../types';
 import { MOCK_APPOINTMENTS } from './mockData';
 
 let inMemoryAppointments: Appointment[] = [...MOCK_APPOINTMENTS];
 
-export async function getAppointments(practitionerId: string = 'prac-1'): Promise<ServiceResponse<Appointment[]>> {
-  const supabase = createClient();
+export async function getAppointments(practitionerId?: string): Promise<ServiceResponse<Appointment[]>> {
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<Appointment[]>(inMemoryAppointments, null);
+
+  let targetId = practitionerId;
+  if (!targetId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) targetId = user.id;
+    else return handleServiceResponse<Appointment[]>(inMemoryAppointments, null);
+  }
 
   const { data, error } = await supabase
     .from('appointments')
     .select('*')
-    .eq('practitioner_id', practitionerId)
+    .eq('practitioner_id', targetId)
     .order('scheduled_at', { ascending: true });
 
   if (error || !data) return handleServiceResponse<Appointment[]>(inMemoryAppointments, null);
@@ -22,7 +31,7 @@ export async function getAppointments(practitionerId: string = 'prac-1'): Promis
 export async function getAppointmentsByPatientId(patientId: string): Promise<ServiceResponse<Appointment[]>> {
   const filtered = inMemoryAppointments.filter((a) => a.patient_id === patientId);
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<Appointment[]>(filtered, null);
 
   const { data, error } = await supabase
@@ -35,11 +44,20 @@ export async function getAppointmentsByPatientId(patientId: string): Promise<Ser
   return handleServiceResponse<Appointment[]>(data as Appointment[], null);
 }
 
-export async function createAppointment(input: CreateAppointmentInput, practitionerId: string = 'prac-1'): Promise<ServiceResponse<Appointment>> {
+export async function createAppointment(input: CreateAppointmentInput, practitionerId?: string): Promise<ServiceResponse<Appointment>> {
+  const supabase = await createClient();
+  if (!supabase) return handleServiceResponse<Appointment>(null as any, 'Client not initialized');
+
+  let targetId = practitionerId;
+  if (!targetId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    targetId = user?.id;
+  }
+
   const newAppt: Appointment = {
     id: `apt-${Date.now()}`,
     patient_id: input.patient_id,
-    practitioner_id: practitionerId,
+    practitioner_id: targetId || 'prac-1',
     patient_name: input.patient_name,
     scheduled_at: input.scheduled_at,
     duration_minutes: input.duration_minutes,
@@ -53,13 +71,12 @@ export async function createAppointment(input: CreateAppointmentInput, practitio
 
   inMemoryAppointments.unshift(newAppt);
 
-  const supabase = createClient();
   if (!supabase) return handleServiceResponse<Appointment>(newAppt, null);
 
   const { data, error } = await supabase
     .from('appointments')
     .insert({
-      practitioner_id: practitionerId,
+      practitioner_id: targetId || 'prac-1',
       patient_id: input.patient_id,
       patient_name: input.patient_name,
       scheduled_at: input.scheduled_at,
@@ -101,7 +118,7 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
     inMemoryAppointments.unshift(updatedInMemory);
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<Appointment>(updatedInMemory, null);
 
   const { data, error } = await supabase
@@ -131,7 +148,7 @@ export async function updateAppointmentTelehealth(
     updatedInMemory = inMemoryAppointments[index];
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) {
     if (updatedInMemory) return handleServiceResponse<Appointment>(updatedInMemory, null);
     return handleServiceResponse<Appointment>(null, 'Appointment not found');

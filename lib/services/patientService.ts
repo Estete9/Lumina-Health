@@ -1,18 +1,26 @@
-import { createClient } from '../supabase/client';
+'use server';
+
+import { createClient } from '../supabase/server';
 import { handleServiceResponse } from './baseService';
 import { Patient, CreatePatientInput, PatientStatus, ServiceResponse } from '../types';
 import { MOCK_PATIENTS } from './mockData';
 
 let inMemoryPatients: Patient[] = [...MOCK_PATIENTS];
 
-export async function getPatients(practitionerId: string = 'prac-1'): Promise<ServiceResponse<Patient[]>> {
-  const supabase = createClient();
+export async function getPatients(practitionerId?: string): Promise<ServiceResponse<Patient[]>> {
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<Patient[]>(inMemoryPatients, null);
+
+  let targetId = practitionerId;
+  if (!targetId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    targetId = user?.id;
+  }
 
   const { data, error } = await supabase
     .from('patients')
     .select('*')
-    .eq('practitioner_id', practitionerId)
+    .eq('practitioner_id', targetId)
     .order('last_name', { ascending: true });
 
   if (error || !data) return handleServiceResponse<Patient[]>(inMemoryPatients, null);
@@ -22,7 +30,7 @@ export async function getPatients(practitionerId: string = 'prac-1'): Promise<Se
 export async function getPatientById(id: string): Promise<ServiceResponse<Patient>> {
   const localPatient = inMemoryPatients.find((p) => p.id === id);
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) {
     if (localPatient) return handleServiceResponse<Patient>(localPatient, null);
     return handleServiceResponse<Patient>(null, 'Patient not found');
@@ -41,10 +49,19 @@ export async function getPatientById(id: string): Promise<ServiceResponse<Patien
   return handleServiceResponse<Patient>(data as Patient, null);
 }
 
-export async function createPatient(input: CreatePatientInput, practitionerId: string = 'prac-1'): Promise<ServiceResponse<Patient>> {
+export async function createPatient(input: CreatePatientInput, practitionerId?: string): Promise<ServiceResponse<Patient>> {
+  const supabase = await createClient();
+  if (!supabase) return handleServiceResponse<Patient>(null as any, 'Client not initialized');
+
+  let targetId = practitionerId;
+  if (!targetId) {
+    const { data: { user } } = await supabase.auth.getUser();
+    targetId = user?.id;
+  }
+
   const newPatient: Patient = {
     id: `pat-${Date.now()}`,
-    practitioner_id: practitionerId,
+    practitioner_id: targetId || 'prac-1',
     first_name: input.first_name,
     last_name: input.last_name,
     email: input.email || null,
@@ -61,7 +78,6 @@ export async function createPatient(input: CreatePatientInput, practitionerId: s
 
   inMemoryPatients.unshift(newPatient);
 
-  const supabase = createClient();
   if (!supabase) return handleServiceResponse<Patient>(newPatient, null);
 
   const { data, error } = await supabase
@@ -98,7 +114,7 @@ export async function updatePatient(id: string, input: Partial<CreatePatientInpu
     updatedInMemory = inMemoryPatients[index];
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) {
     if (updatedInMemory) return handleServiceResponse<Patient>(updatedInMemory, null);
     return handleServiceResponse<Patient>(null, 'Patient not found');
@@ -141,7 +157,7 @@ export async function updatePatientStatus(id: string, status: PatientStatus): Pr
     inMemoryPatients.unshift(updatedInMemory);
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   if (!supabase) return handleServiceResponse<Patient>(updatedInMemory, null);
 
   const { data, error } = await supabase
