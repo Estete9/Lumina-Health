@@ -57,7 +57,7 @@ export async function createAppointment(input: CreateAppointmentInput, practitio
   const newAppt: Appointment = {
     id: `apt-${Date.now()}`,
     patient_id: input.patient_id,
-    practitioner_id: targetId || 'prac-1',
+    practitioner_id: targetId as string,
     patient_name: input.patient_name,
     scheduled_at: input.scheduled_at,
     duration_minutes: input.duration_minutes,
@@ -76,7 +76,7 @@ export async function createAppointment(input: CreateAppointmentInput, practitio
   const { data, error } = await supabase
     .from('appointments')
     .insert({
-      practitioner_id: targetId || 'prac-1',
+      practitioner_id: targetId as string,
       patient_id: input.patient_id,
       patient_name: input.patient_name,
       scheduled_at: input.scheduled_at,

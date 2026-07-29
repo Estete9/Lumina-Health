@@ -36,7 +36,7 @@ export async function createNote(input: CreateNoteInput, practitionerId?: string
   const newNote: ClinicalNote = {
     id: `note-${Date.now()}`,
     patient_id: input.patient_id,
-    practitioner_id: targetId || 'prac-1',
+    practitioner_id: targetId as string,
     session_date: input.session_date || new Date().toISOString(),
     discoveries: input.discoveries || [],
     daily_actions: input.daily_actions || [],
@@ -54,7 +54,7 @@ export async function createNote(input: CreateNoteInput, practitionerId?: string
     .from('clinical_notes')
     .insert({
       patient_id: input.patient_id,
-      practitioner_id: targetId || 'prac-1',
+      practitioner_id: targetId as string,
       session_date: input.session_date,
       discoveries: input.discoveries || [],
       daily_actions: input.daily_actions || [],

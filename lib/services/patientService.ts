@@ -61,7 +61,7 @@ export async function createPatient(input: CreatePatientInput, practitionerId?: 
 
   const newPatient: Patient = {
     id: `pat-${Date.now()}`,
-    practitioner_id: targetId || 'prac-1',
+    practitioner_id: targetId as string,
     first_name: input.first_name,
     last_name: input.last_name,
     email: input.email || null,
@@ -83,7 +83,7 @@ export async function createPatient(input: CreatePatientInput, practitionerId?: 
   const { data, error } = await supabase
     .from('patients')
     .insert({
-      practitioner_id: practitionerId,
+      practitioner_id: targetId,
       first_name: input.first_name,
       last_name: input.last_name,
       email: input.email || null,
@@ -93,7 +93,8 @@ export async function createPatient(input: CreatePatientInput, practitionerId?: 
       status: input.status || 'active',
       primary_ailment: input.primary_ailment,
       secondary_ailments: input.secondary_ailments || [],
-      tags: input.tags || []
+      tags: input.tags || [],
+      notes_summary: input.notes_summary || null
     })
     .select()
     .single();
