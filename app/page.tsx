@@ -62,7 +62,7 @@ export default async function DashboardPage() {
       {/* Dashboard Main Grid Area */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <UpcomingAppointments appointments={stats.recentAppointments} />
-        <RecentNotes patients={stats.recentPatients} />
+        <RecentNotes notes={stats.recentNotes} />
       </div>
     </div>
   );

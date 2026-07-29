@@ -277,6 +277,9 @@ export function getDashboardStatsData(): PractitionerDashboardStats {
     upcomingAppointmentsCount: todayAppointments.length,
     notesWrittenThisWeek: 18,
     recentAppointments: todayAppointments,
-    recentPatients: MOCK_PATIENTS.filter((p) => p.status === 'active')
+    recentNotes: MOCK_CLINICAL_NOTES.filter((p) => p.practitioner_id === 'prac-1').map(note => {
+      const p = MOCK_PATIENTS.find(pat => pat.id === note.patient_id);
+      return { ...note, patient_name: p ? `${p.first_name} ${p.last_name}` : 'Unknown Patient' };
+    })
   };
 }

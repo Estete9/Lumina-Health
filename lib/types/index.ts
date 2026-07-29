@@ -106,7 +106,7 @@ export interface PractitionerDashboardStats {
   upcomingAppointmentsCount: number;
   notesWrittenThisWeek: number;
   recentAppointments: Appointment[];
-  recentPatients: Patient[];
+  recentNotes: (ClinicalNote & { patient_name: string })[];
 }
 
 export interface ServiceResponse<T> {

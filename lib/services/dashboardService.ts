@@ -23,22 +23,55 @@ export async function getDashboardStats(practitionerId?: string): Promise<Servic
   const activePatientsCount = patients.filter(p => p.status === 'active').length;
   
   const now = new Date();
-  const upcomingAppointmentsCount = appointments.filter(a => new Date(a.scheduled_at) > now).length;
+  
+  // Date boundaries for "Today" (local time string comparison is easiest since we store ISODate strings)
+  const todayStr = now.toISOString().split('T')[0];
 
-  const weekAgo = new Date();
-  weekAgo.setDate(now.getDate() - 7);
-  const notesWrittenThisWeek = notes.filter(n => new Date(n.created_at) > weekAgo).length;
+  // Appointments scheduled for today
+  const todayAppointments = appointments.filter(a => {
+    return a.scheduled_at.startsWith(todayStr) && a.status !== 'cancelled';
+  });
 
-  const recentPatients = [...patients].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
-  const recentAppointments = [...appointments].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 5);
+  const upcomingAppointmentsCount = todayAppointments.length;
+
+  // Pending Notes: past or completed appointments that do NOT have a note
+  const pastOrCompletedAppointments = appointments.filter(a => {
+    return a.status === 'completed' || new Date(a.scheduled_at) < now;
+  });
+
+  const pendingNotesCount = pastOrCompletedAppointments.filter(apt => {
+    const hasNote = notes.some(n => 
+      n.patient_id === apt.patient_id && 
+      n.session_date && 
+      n.session_date.split('T')[0] === apt.scheduled_at.split('T')[0]
+    );
+    return !hasNote;
+  }).length;
+
+  // Today's schedule sorted by time ascending (soonest first)
+  const recentAppointments = [...todayAppointments]
+    .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
+    .slice(0, 5);
+
+  // Recent Notes mapping
+  const recentNotes = [...notes]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5)
+    .map(note => {
+      const patient = patients.find(p => p.id === note.patient_id);
+      return {
+        ...note,
+        patient_name: patient ? `${patient.first_name} ${patient.last_name}` : 'Unknown Patient'
+      };
+    });
 
   return {
     data: {
       activePatientsCount,
       upcomingAppointmentsCount,
-      notesWrittenThisWeek,
+      notesWrittenThisWeek: pendingNotesCount, // Renamed in metric title, kept the interface key for now
       recentAppointments,
-      recentPatients
+      recentNotes
     },
     error: null
   };
