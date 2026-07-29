@@ -10,26 +10,23 @@ import { Plus } from 'lucide-react';
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const isAuthPage = pathname === '/login' || pathname === '/register';
 
   useEffect(() => {
     let isMounted = true;
     async function checkAuth() {
-      let sessionRes; try { sessionRes = await getSession(); } catch (err) { console.error('CRASH:', err); sessionRes = { data: null, error: err.message }; }
-      if (!isMounted) return;
-
-      const hasSession = Boolean(sessionRes.data && sessionRes.data.user);
-
-      if (isAuthPage && hasSession) {
-        // Authenticated users shouldn't see login/register; redirect to dashboard
-        router.push('/');
-      } else if (!isAuthPage && !hasSession) {
-        // Unauthenticated users visiting protected routes; redirect to login
-        router.push('/login');
+      try { 
+        const sessionRes = await getSession();
+        if (!isMounted) return;
+        const hasSession = Boolean(sessionRes.data && sessionRes.data.user);
+        if (isAuthPage && hasSession) {
+          router.push('/');
+        } else if (!isAuthPage && !hasSession) {
+          router.push('/login');
+        }
+      } catch (err) {
+        console.error('CRASH:', err);
       }
-
-      setIsCheckingAuth(false);
     }
 
     checkAuth();
@@ -47,18 +44,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Brief loading placeholder during initial auth check
-  if (isCheckingAuth) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-50">
-        <div className="flex items-center gap-3 text-slate-500 font-medium text-sm">
-          <div className="h-5 w-5 animate-spin rounded-full border-2 border-teal-600 border-t-transparent" />
-          <span>Verifying practice session...</span>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50">
       <Sidebar />
@@ -66,7 +51,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Header />
         <main className="flex-1 overflow-y-auto p-6">
           <div className="mx-auto max-w-7xl">
-            {children}
+            <React.Suspense fallback={
+              <div className="flex h-[50vh] w-full items-center justify-center">
+                <div className="flex flex-col items-center gap-3 text-slate-400">
+                  <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                  <span className="text-sm font-medium animate-pulse">Loading workspace...</span>
+                </div>
+              </div>
+            }>
+              {children}
+            </React.Suspense>
           </div>
         </main>
       </div>
