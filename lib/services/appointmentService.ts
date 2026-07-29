@@ -11,18 +11,20 @@ export async function getAppointments(practitionerId?: string): Promise<ServiceR
   const supabase = await createClient();
   if (!supabase) return handleServiceResponse<Appointment[]>(inMemoryAppointments, null);
 
-  let targetId = practitionerId;
-  if (!targetId) {
+  // For MVP, if no practitionerId is provided and no auth session exists, we bypass the filter
+  // so we can see all seeded appointments in the database.
+  let query = supabase.from('appointments').select('*').order('scheduled_at', { ascending: true });
+  
+  if (practitionerId) {
+    query = query.eq('practitioner_id', practitionerId);
+  } else {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) targetId = user.id;
-    else return handleServiceResponse<Appointment[]>(inMemoryAppointments, null);
+    if (user) {
+      query = query.eq('practitioner_id', user.id);
+    }
   }
 
-  const { data, error } = await supabase
-    .from('appointments')
-    .select('*')
-    .eq('practitioner_id', targetId)
-    .order('scheduled_at', { ascending: true });
+  const { data, error } = await query;
 
   if (error || !data) return handleServiceResponse<Appointment[]>(inMemoryAppointments, null);
   return handleServiceResponse<Appointment[]>(data as Appointment[], null);
@@ -119,7 +121,22 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
   }
 
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<Appointment>(updatedInMemory, null);
+  if (!supabase) return handleServiceResponse<Appointment>(updatedInMemory!, null);
+
+  if (status === 'cancelled') {
+    // Completely remove from Supabase
+    const { error } = await supabase
+      .from('appointments')
+      .delete()
+      .eq('id', id);
+    
+    // Remove from in-memory array
+    const index = inMemoryAppointments.findIndex((a) => a.id === id);
+    if (index !== -1) inMemoryAppointments.splice(index, 1);
+
+    if (error) return handleServiceResponse<Appointment>(updatedInMemory!, null);
+    return handleServiceResponse<Appointment>(updatedInMemory!, null);
+  }
 
   const { data, error } = await supabase
     .from('appointments')
