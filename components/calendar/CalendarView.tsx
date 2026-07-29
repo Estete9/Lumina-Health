@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Appointment, Patient, AppointmentStatus } from '@/lib/types';
 import { updateAppointmentStatus } from '@/lib/services/appointmentService';
 import { NewAppointmentModal } from './NewAppointmentModal';
@@ -19,14 +19,18 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [defaultBookingDate, setDefaultBookingDate] = useState<Date | undefined>(undefined);
   const [copiedLink, setCopiedLink] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     if (searchParams?.get('new') === 'true') {
       setIsModalOpen(true);
+      // Strip ?new=true from the URL so it doesn't reopen on refresh
+      router.replace('/calendar');
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
   
   const currentDate = new Date();
   
@@ -72,8 +76,30 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
+  const handleGridClick = (day: Date, hour: number) => {
+    const bookingDate = new Date(day);
+    bookingDate.setHours(hour, 0, 0, 0);
+    const clickMs = bookingDate.getTime();
+    
+    // Check if there's already an active appointment overlapping this hour slot
+    // We assume a default 50-minute slot for the click check
+    const clickEnd = clickMs + (50 * 60000);
+    
+    const isOccupied = appointments.some(apt => {
+      if (apt.status === 'cancelled') return false;
+      const aptStart = new Date(apt.scheduled_at).getTime();
+      const aptEnd = aptStart + (apt.duration_minutes * 60000);
+      return clickMs < aptEnd && clickEnd > aptStart;
+    });
+
+    if (isOccupied) return;
+
+    setDefaultBookingDate(bookingDate);
+    setIsModalOpen(true);
+  };
+
   return (
-    <div className="flex flex-col h-[calc(100vh-5rem)] gap-4">
+    <div className="flex flex-col h-[calc(100vh-8rem)] gap-4">
 
 
       {/* Main Calendar View Container */}
@@ -108,15 +134,15 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
         </div>
 
         {/* Hourly Grid Slots */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden divide-y divide-slate-100">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden divide-y divide-slate-200">
           {HOURS.map((hour) => {
             const formattedHour = `${hour > 12 ? hour - 12 : hour}:00 ${hour >= 12 ? 'PM' : 'AM'}`;
 
             return (
-              <div key={hour} className="grid grid-cols-8 min-h-[5rem]">
+              <div key={hour} className="grid grid-cols-8 h-[5.5rem] hover:bg-slate-50/40 transition-colors group">
                 {/* Time Label Column */}
-                <div className="p-2 border-r border-slate-200 text-right text-xs text-slate-400 font-medium bg-slate-50/50">
-                  {formattedHour}
+                <div className="p-2 border-r border-slate-200 text-right text-xs text-slate-500 font-semibold bg-slate-50/80 flex flex-col justify-start">
+                  <span className="mt-[-8px] bg-slate-50/80 px-1 rounded">{formattedHour}</span>
                 </div>
 
                 {/* 7 Day Columns for this Hour */}
@@ -135,18 +161,29 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                   return (
                     <div
                       key={dayIdx}
-                      className="border-r border-slate-100 last:border-r-0 p-1 relative group hover:bg-slate-50/60 transition-colors"
+                      className="border-r border-slate-200 last:border-r-0 p-1.5 relative transition-colors cursor-pointer hover:bg-slate-100/50"
+                      onClick={() => handleGridClick(day, hour)}
                     >
                       {cellAppointments.map((apt) => {
                         const isCompleted = apt.status === 'completed';
                         const isCancelled = apt.status === 'cancelled';
+                        const aptDate = new Date(apt.scheduled_at);
+                        
+                        // Calculate position
+                        const topPercentage = (aptDate.getMinutes() / 60) * 100;
+                        const heightPercentage = (apt.duration_minutes / 60) * 100;
 
                         return (
                           <div
                             key={apt.id}
-                            onClick={() => setSelectedAppointment(apt)}
+                            onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); }}
+                            style={{
+                              top: `${topPercentage}%`,
+                              height: `calc(${heightPercentage}% - 4px)`,
+                              minHeight: '40px'
+                            }}
                             className={cn(
-                              'p-2 mb-1 rounded-lg border text-xs shadow-sm flex flex-col justify-between h-full transition-all hover:shadow-md cursor-pointer hover:border-teal-300',
+                              'absolute left-1 right-1 p-2 rounded-lg border text-xs shadow-sm flex flex-col justify-between transition-all hover:shadow-md cursor-pointer hover:border-teal-300 z-10 overflow-hidden',
                               apt.status === 'scheduled' && 'bg-teal-50 border-teal-200 text-teal-950 hover:bg-teal-100/80',
                               apt.status === 'completed' && 'bg-emerald-50 border-emerald-200 text-emerald-950 hover:bg-emerald-100/80 opacity-75 line-through',
                               apt.status === 'cancelled' && 'bg-rose-50 border-rose-200 text-rose-950 opacity-75 line-through hover:bg-rose-100/80',
@@ -163,38 +200,38 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                               </p>
                             </div>
 
-                            <div className="flex items-center justify-between text-[10px] text-slate-500 mt-1 pt-1 border-t border-slate-200/50">
+                            <div className="flex items-center justify-between text-[10px] text-slate-500 mt-auto pt-1 border-t border-slate-200/50 shrink-0">
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3 text-slate-400" />
                                 {apt.duration_minutes}m
                               </span>
-                            </div>
-                            
-                            {/* Action Buttons */}
-                            <div className="flex items-center gap-1 mt-1 justify-end">
-                              {!isCancelled && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleStatusUpdate(apt.id, isCompleted ? 'scheduled' : 'completed'); }}
-                                  className={cn(
-                                    "p-1 rounded transition-colors",
-                                    isCompleted 
-                                      ? "text-emerald-600 bg-emerald-100 hover:bg-emerald-200" 
-                                      : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
-                                  )}
-                                  title={isCompleted ? "Undo Completion" : "Mark Completed"}
-                                >
-                                  <CheckCircle className="w-3.5 h-3.5" />
-                                </button>
-                              )}
-                              {!isCancelled && (
-                                <button
-                                  onClick={(e) => { e.stopPropagation(); handleStatusUpdate(apt.id, 'cancelled'); }}
-                                  className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
-                                  title="Cancel Session"
-                                >
-                                  <XCircle className="w-3.5 h-3.5" />
-                                </button>
-                              )}
+                              
+                              {/* Action Buttons */}
+                              <div className="flex items-center gap-1">
+                                {!isCancelled && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleStatusUpdate(apt.id, isCompleted ? 'scheduled' : 'completed'); }}
+                                    className={cn(
+                                      "p-0.5 rounded transition-colors",
+                                      isCompleted 
+                                        ? "text-emerald-600 bg-emerald-100 hover:bg-emerald-200" 
+                                        : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+                                    )}
+                                    title={isCompleted ? "Undo Completion" : "Mark Completed"}
+                                  >
+                                    <CheckCircle className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                                {!isCancelled && (
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); handleStatusUpdate(apt.id, 'cancelled'); }}
+                                    className="p-0.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                                    title="Cancel Session"
+                                  >
+                                    <XCircle className="w-3.5 h-3.5" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
@@ -211,8 +248,13 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
       {/* Booking Modal */}
       <NewAppointmentModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setDefaultBookingDate(undefined);
+        }}
         patients={patients}
+        appointments={appointments}
+        defaultDate={defaultBookingDate}
         onSuccess={() => {
           window.location.reload();
         }}

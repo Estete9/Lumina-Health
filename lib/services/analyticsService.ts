@@ -173,7 +173,7 @@ export async function computeAnalyticsFromServices(practitionerId: string): Prom
  * Primary Analytics Service Handler with Supabase + Dual-Mode Fallback
  */
 export async function getPractitionerAnalytics(
-  practitionerId: string = 'prac-1'
+  practitionerId?: string
 ): Promise<ServiceResponse<PractitionerAnalytics>> {
   try {
     const analytics = await computeAnalyticsFromServices(practitionerId);
@@ -362,7 +362,7 @@ export async function computeCaseloadCapacityFromServices(practitionerId: string
 
 // Full Decision Analytics Hub Handler
 export async function getDecisionAnalyticsHubData(
-  practitionerId: string = 'prac-1'
+  practitionerId?: string
 ): Promise<ServiceResponse<DecisionAnalyticsHubData>> {
   try {
     const [clinicalOutcomes, practiceDynamics, caseloadCapacity] = await Promise.all([

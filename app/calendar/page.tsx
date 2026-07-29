@@ -5,11 +5,9 @@ import { getPatients } from '@/lib/services/patientService';
 import { ShieldAlert } from 'lucide-react';
 
 export default async function CalendarPage() {
-  const mockPractitionerId = 'prac-1';
-  
   // Strict UI Abstraction: Call data via service layer
-  const { data: appointments, error: aptError } = await getAppointments(mockPractitionerId);
-  const { data: patients, error: patError } = await getPatients(mockPractitionerId);
+  const { data: appointments, error: aptError } = await getAppointments();
+  const { data: patients, error: patError } = await getPatients();
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

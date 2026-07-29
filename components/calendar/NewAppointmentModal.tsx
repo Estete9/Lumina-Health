@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Patient } from '@/lib/types';
+import { Patient, Appointment } from '@/lib/types';
 import { createAppointment } from '@/lib/services/appointmentService';
 import { X, Calendar as CalendarIcon, CheckCircle2, Video } from 'lucide-react';
 import { TelehealthProvider } from '@/lib/types';
@@ -10,19 +10,23 @@ interface NewAppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
   patients: Patient[];
+  appointments?: Appointment[];
+  defaultDate?: Date;
   onSuccess: () => void;
 }
 
-export function NewAppointmentModal({ isOpen, onClose, patients, onSuccess }: NewAppointmentModalProps) {
+export function NewAppointmentModal({ isOpen, onClose, patients, appointments = [], defaultDate, onSuccess }: NewAppointmentModalProps) {
   const [patientId, setPatientId] = useState(patients[0]?.id || '');
   const [sessionType, setSessionType] = useState('Individual CBT');
   
-  // Compute default time to next available slot
-  const defaultDate = new Date();
-  defaultDate.setHours(10, 0, 0, 0); // 10 AM by default today
+  // Compute initial time based on defaultDate prop or fallback
+  const initialDate = defaultDate || new Date();
+  if (!defaultDate) {
+    initialDate.setHours(10, 0, 0, 0); // 10 AM by default today if no slot clicked
+  }
   
-  const [dateStr, setDateStr] = useState(defaultDate.toISOString().split('T')[0]);
-  const [timeStr, setTimeStr] = useState('10:00');
+  const [dateStr, setDateStr] = useState(initialDate.toISOString().split('T')[0]);
+  const [timeStr, setTimeStr] = useState(initialDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }));
   const [duration, setDuration] = useState(50);
   const [notes, setNotes] = useState('');
   const [enableTelehealth, setEnableTelehealth] = useState(false);
@@ -30,6 +34,14 @@ export function NewAppointmentModal({ isOpen, onClose, patients, onSuccess }: Ne
   const [telehealthUrl, setTelehealthUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // React to prop changes if modal opens with a new defaultDate
+  React.useEffect(() => {
+    if (isOpen && defaultDate) {
+      setDateStr(defaultDate.toISOString().split('T')[0]);
+      setTimeStr(defaultDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }));
+    }
+  }, [isOpen, defaultDate]);
 
   if (!isOpen) return null;
 
@@ -41,6 +53,24 @@ export function NewAppointmentModal({ isOpen, onClose, patients, onSuccess }: Ne
     const selectedPatient = patients.find((p) => p.id === patientId);
     const patientName = selectedPatient ? `${selectedPatient.first_name} ${selectedPatient.last_name}` : 'Client Session';
     const scheduledAt = new Date(`${dateStr}T${timeStr}:00`).toISOString();
+    const scheduledTime = new Date(`${dateStr}T${timeStr}:00`).getTime();
+
+    // Check for conflicts
+    const hasConflict = appointments.some(apt => {
+      if (apt.status === 'cancelled') return false;
+      const aptTime = new Date(apt.scheduled_at).getTime();
+      const aptEnd = aptTime + (apt.duration_minutes * 60000);
+      const newEnd = scheduledTime + (duration * 60000);
+      
+      // Overlap condition: (StartA < EndB) and (EndA > StartB)
+      return scheduledTime < aptEnd && newEnd > aptTime;
+    });
+
+    if (hasConflict) {
+      setLoading(false);
+      setErrorMsg('Warning: This time slot is already booked for another session.');
+      return;
+    }
 
     const response = await createAppointment({
       patient_id: patientId,
@@ -51,7 +81,7 @@ export function NewAppointmentModal({ isOpen, onClose, patients, onSuccess }: Ne
       notes: notes,
       telehealth_url: enableTelehealth && telehealthUrl ? telehealthUrl : undefined,
       telehealth_provider: enableTelehealth ? telehealthProvider : undefined,
-    }, 'prac-1');
+    });
 
     setLoading(false);
 
@@ -232,7 +262,7 @@ export function NewAppointmentModal({ isOpen, onClose, patients, onSuccess }: Ne
               className="flex items-center gap-2 px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm shadow-sm transition-all disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{loading ? 'Booking...' : 'Confirm Session'}</span>
+              <span>{loading ? 'Booking...' : 'Book'}</span>
             </button>
           </div>
         </form>
