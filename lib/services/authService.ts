@@ -147,7 +147,7 @@ export const authService = {
     }
 
     const { data, error } = await supabase.auth.getSession();
-    if (error || !data.session) return { data: null, error: error?.message || 'No session found' };
+    if (error || !data?.session?.user) return { data: null, error: error?.message || 'No session found' };
 
     const { data: profile } = await supabase
       .from('practitioners')

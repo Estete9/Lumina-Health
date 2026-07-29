@@ -16,7 +16,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true;
     async function checkAuth() {
-      const sessionRes = await getSession();
+      let sessionRes; try { sessionRes = await getSession(); } catch (err) { console.error('CRASH:', err); sessionRes = { data: null, error: err.message }; }
       if (!isMounted) return;
 
       const hasSession = Boolean(sessionRes.data && sessionRes.data.user);
