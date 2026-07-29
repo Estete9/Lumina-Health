@@ -21,8 +21,23 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [defaultBookingDate, setDefaultBookingDate] = useState<Date | undefined>(undefined);
   const [copiedLink, setCopiedLink] = useState(false);
+  const [hoveredAptId, setHoveredAptId] = useState<string | null>(null);
+  const hoverTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const handleMouseEnter = (id: string) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHoveredAptId(id);
+    }, 500);
+  };
+
+  const handleMouseLeave = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    setHoveredAptId(null);
+  };
 
   useEffect(() => {
     if (searchParams?.get('new') === 'true') {
@@ -173,17 +188,22 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                         const topPercentage = (aptDate.getMinutes() / 60) * 100;
                         const heightPercentage = (apt.duration_minutes / 60) * 100;
 
+                        const isHoverExpanded = hoveredAptId === apt.id;
+
                         return (
                           <div
                             key={apt.id}
+                            onMouseEnter={() => handleMouseEnter(apt.id)}
+                            onMouseLeave={handleMouseLeave}
                             onClick={(e) => { e.stopPropagation(); setSelectedAppointment(apt); }}
                             style={{
                               top: `${topPercentage}%`,
-                              height: `calc(${heightPercentage}% - 4px)`,
-                              minHeight: '40px'
+                              minHeight: `max(40px, calc(${heightPercentage}% - 4px))`,
+                              maxHeight: isHoverExpanded ? '500px' : `max(40px, calc(${heightPercentage}% - 4px))`
                             }}
                             className={cn(
-                              'absolute left-1 right-1 p-2 rounded-lg border text-xs shadow-sm flex flex-col justify-between transition-all hover:shadow-md cursor-pointer hover:border-teal-300 z-10 overflow-hidden',
+                              'absolute left-1 right-1 p-2 rounded-lg border text-xs shadow-sm flex flex-col justify-between transition-all duration-300 ease-in-out cursor-pointer overflow-hidden',
+                              isHoverExpanded ? 'z-50 shadow-lg border-teal-300' : 'z-10',
                               apt.status === 'scheduled' && 'bg-teal-50 border-teal-200 text-teal-950 hover:bg-teal-100/80',
                               apt.status === 'completed' && 'bg-emerald-50 border-emerald-200 text-emerald-950 hover:bg-emerald-100/80 opacity-75 line-through',
                               apt.status === 'cancelled' && 'bg-rose-50 border-rose-200 text-rose-950 opacity-75 line-through hover:bg-rose-100/80',
@@ -343,6 +363,40 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
                     </div>
                   </div>
                 )}
+
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2 mt-4">
+                  {selectedAppointment.status !== 'cancelled' && (
+                    <button
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        handleStatusUpdate(selectedAppointment.id, selectedAppointment.status === 'completed' ? 'scheduled' : 'completed');
+                        setSelectedAppointment(null);
+                      }}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors",
+                        selectedAppointment.status === 'completed' 
+                          ? "text-emerald-700 bg-emerald-100 hover:bg-emerald-200" 
+                          : "text-slate-600 bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700"
+                      )}
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {selectedAppointment.status === 'completed' ? "Undo Completion" : "Mark Completed"}
+                    </button>
+                  )}
+                  {selectedAppointment.status !== 'cancelled' && (
+                    <button
+                      onClick={(e) => { 
+                        e.stopPropagation(); 
+                        handleStatusUpdate(selectedAppointment.id, 'cancelled');
+                        setSelectedAppointment(null);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-slate-600 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Cancel Session
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>

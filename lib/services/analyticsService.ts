@@ -36,7 +36,7 @@ const DIAGNOSTIC_COLORS = [
 /**
  * Helper to dynamically compute analytics from domain data services
  */
-export async function computeAnalyticsFromServices(practitionerId: string): Promise<PractitionerAnalytics> {
+export async function computeAnalyticsFromServices(practitionerId?: string): Promise<PractitionerAnalytics> {
   const [patientsRes, apptsRes, notesRes] = await Promise.all([
     getPatients(practitionerId),
     getAppointments(practitionerId),
@@ -155,7 +155,7 @@ export async function computeAnalyticsFromServices(practitionerId: string): Prom
     .slice(0, 8);
 
   return {
-    practitionerId,
+    practitionerId: practitionerId || 'unknown',
     totalPatients,
     activePatients,
     activeCaseloadRatio,
@@ -184,7 +184,7 @@ export async function getPractitionerAnalytics(
 }
 
 // Category 1 In-Memory Fallback Calculation
-export async function computeClinicalOutcomesFromServices(practitionerId: string): Promise<ClinicalOutcomesData> {
+export async function computeClinicalOutcomesFromServices(practitionerId?: string): Promise<ClinicalOutcomesData> {
   const [patientsRes, notesRes] = await Promise.all([
     getPatients(practitionerId),
     getNotes(practitionerId)
@@ -265,7 +265,7 @@ export async function computeClinicalOutcomesFromServices(practitionerId: string
 }
 
 // Category 2 In-Memory Fallback Calculation
-export async function computePracticeDynamicsFromServices(practitionerId: string): Promise<PracticeDynamicsData> {
+export async function computePracticeDynamicsFromServices(practitionerId?: string): Promise<PracticeDynamicsData> {
   const [apptsRes, patientsRes] = await Promise.all([
     getAppointments(practitionerId),
     getPatients(practitionerId)
@@ -307,7 +307,7 @@ export async function computePracticeDynamicsFromServices(practitionerId: string
 }
 
 // Category 3 In-Memory Fallback Calculation
-export async function computeCaseloadCapacityFromServices(practitionerId: string): Promise<CaseloadCapacityData> {
+export async function computeCaseloadCapacityFromServices(practitionerId?: string): Promise<CaseloadCapacityData> {
   const [patientsRes] = await Promise.all([
     getPatients(practitionerId)
   ]);
@@ -372,7 +372,7 @@ export async function getDecisionAnalyticsHubData(
     ]);
 
     const data: DecisionAnalyticsHubData = {
-      practitionerId,
+      practitionerId: practitionerId || 'unknown',
       clinicalOutcomes,
       practiceDynamics,
       caseloadCapacity,
