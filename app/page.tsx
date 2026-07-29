@@ -19,12 +19,6 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-bold text-slate-900">Practitioner Dashboard</h1>
           <p className="text-sm text-slate-500">Welcome back, Dr. Jenkins. Here is your daily overview.</p>
         </div>
-        <button
-          type="button"
-          className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white shadow hover:bg-teal-700 transition-colors"
-        >
-          + New Clinical Note
-        </button>
       </div>
 
       {/* Key Metric Overview Cards */}

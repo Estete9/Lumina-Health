@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Bell, Plus, ShieldCheck, LogOut, User as UserIcon } from 'lucide-react';
-import { NewClinicalNoteModal } from '@/components/notes/NewClinicalNoteModal';
+import { Bell, ShieldCheck, LogOut } from 'lucide-react';
 import { GlobalSearchBar } from './GlobalSearchBar';
 import { getCurrentUser, logout } from '@/lib/services/authService';
 import { Practitioner } from '@/lib/types';
 
 export function Header() {
-  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [user, setUser] = useState<Practitioner | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const router = useRouter();
@@ -52,15 +50,6 @@ export function Header() {
 
       {/* Header Actions & Practitioner Profile */}
       <div className="flex items-center gap-4">
-        {/* Quick Action Button: New Clinical Note */}
-        <button
-          type="button"
-          onClick={() => setIsNoteModalOpen(true)}
-          className="flex items-center gap-1.5 rounded-xl bg-teal-600 px-3.5 py-2 text-xs font-semibold text-white shadow-sm hover:bg-teal-700 transition-all hover:shadow"
-        >
-          <Plus className="h-4 w-4" />
-          <span>+ Note</span>
-        </button>
 
         {/* Notifications Icon */}
         <button
@@ -109,14 +98,6 @@ export function Header() {
           )}
         </div>
       </div>
-
-      {/* Global New Clinical Note Modal Portal */}
-      <NewClinicalNoteModal
-        isOpen={isNoteModalOpen}
-        onClose={() => setIsNoteModalOpen(false)}
-        onSuccess={() => setIsNoteModalOpen(false)}
-      />
     </header>
   );
 }
-
