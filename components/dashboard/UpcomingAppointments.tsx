@@ -1,13 +1,24 @@
 'use client';
 
-import { Appointment } from '@/lib/types';
+import { Appointment, AppointmentStatus } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { Video } from 'lucide-react';
+import { useState } from 'react';
+import { SessionDetailsModal } from '../calendar/SessionDetailsModal';
+import { updateAppointmentStatus } from '@/lib/services/appointmentService';
 
 export function UpcomingAppointments({ appointments }: { appointments: Appointment[] }) {
   const router = useRouter();
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const activeAppointments = appointments.filter(apt => apt.status !== 'cancelled');
+
+  const handleStatusUpdate = async (id: string, newStatus: AppointmentStatus) => {
+    const res = await updateAppointmentStatus(id, newStatus);
+    if (res.data) {
+      window.location.reload();
+    }
+  };
 
   return (
     <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -24,11 +35,24 @@ export function UpcomingAppointments({ appointments }: { appointments: Appointme
             return (
               <div 
                 key={apt.id} 
-                className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-3.5 hover:bg-teal-50/50 hover:border-teal-300 cursor-pointer transition-all shadow-2xs group"
-                onClick={() => router.push(`/patients/${apt.patient_id}`)}
+                className="flex items-center justify-between rounded-lg border border-slate-100 bg-slate-50 p-3.5 shadow-2xs group"
               >
                 <div>
-                  <p className={cn("font-medium text-slate-800", isCompleted && "opacity-75 line-through")}>Session with {apt.patient_name || 'Unknown Patient'}</p>
+                  <p className={cn("font-medium", isCompleted ? "opacity-75 line-through text-slate-800" : "text-slate-800")}>
+                    <button 
+                      onClick={() => setSelectedAppointment(apt)}
+                      className="underline decoration-teal-300 text-teal-700 hover:text-teal-800 hover:decoration-teal-500 transition-colors cursor-pointer focus:outline-none"
+                    >
+                      Session
+                    </button>
+                    <span className="text-slate-600 font-normal">{' '}with{' '}</span>
+                    <button 
+                      onClick={() => router.push(`/patients/${apt.patient_id}`)}
+                      className="underline decoration-teal-300 text-teal-700 hover:text-teal-800 hover:decoration-teal-500 transition-colors cursor-pointer focus:outline-none"
+                    >
+                      {apt.patient_name || 'Unknown Patient'}
+                    </button>
+                  </p>
                   <p className={cn("text-xs text-slate-500", isCompleted && "opacity-75 line-through")}>
                     {apt.session_type} • {timeString} ({apt.duration_minutes} min)
                   </p>
@@ -46,22 +70,31 @@ export function UpcomingAppointments({ appointments }: { appointments: Appointme
                       Join Call
                     </button>
                   )}
-                  <span
-                    className={cn(
-                      'rounded-full px-2.5 py-1 text-xs font-semibold capitalize',
-                      isCompleted
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'bg-teal-100 text-teal-800'
-                    )}
-                  >
-                    {apt.status}
-                  </span>
+                  {apt.status !== 'scheduled' && (
+                    <span
+                      className={cn(
+                        'rounded-full px-2.5 py-1 text-xs font-semibold capitalize',
+                        isCompleted
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-teal-100 text-teal-800'
+                      )}
+                    >
+                      {apt.status}
+                    </span>
+                  )}
                 </div>
               </div>
             );
           })
         )}
       </div>
+
+      <SessionDetailsModal
+        selectedAppointment={selectedAppointment}
+        onClose={() => setSelectedAppointment(null)}
+        appointments={appointments}
+        onStatusUpdate={handleStatusUpdate}
+      />
     </div>
   );
 }
