@@ -24,12 +24,15 @@ export async function getDashboardStats(practitionerId?: string): Promise<Servic
   
   const now = new Date();
   
-  // Date boundaries for "Today" (local time string comparison is easiest since we store ISODate strings)
-  const todayStr = now.toISOString().split('T')[0];
-
-  // Appointments scheduled for today
+  // Appointments scheduled for today (comparing local date parts)
   const todayAppointments = appointments.filter(a => {
-    return a.scheduled_at.startsWith(todayStr) && a.status !== 'cancelled';
+    if (a.status === 'cancelled') return false;
+    const aptDate = new Date(a.scheduled_at);
+    return (
+      aptDate.getDate() === now.getDate() &&
+      aptDate.getMonth() === now.getMonth() &&
+      aptDate.getFullYear() === now.getFullYear()
+    );
   });
 
   const upcomingAppointmentsCount = todayAppointments.length;
@@ -40,11 +43,17 @@ export async function getDashboardStats(practitionerId?: string): Promise<Servic
   });
 
   const pendingNotesCount = pastOrCompletedAppointments.filter(apt => {
-    const hasNote = notes.some(n => 
-      n.patient_id === apt.patient_id && 
-      n.session_date && 
-      n.session_date.split('T')[0] === apt.scheduled_at.split('T')[0]
-    );
+    const aptDate = new Date(apt.scheduled_at);
+    const hasNote = notes.some(n => {
+      if (!n.session_date) return false;
+      const noteDate = new Date(n.session_date);
+      return (
+        n.patient_id === apt.patient_id &&
+        noteDate.getDate() === aptDate.getDate() &&
+        noteDate.getMonth() === aptDate.getMonth() &&
+        noteDate.getFullYear() === aptDate.getFullYear()
+      );
+    });
     return !hasNote;
   }).length;
 
