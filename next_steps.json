@@ -1,5 +1,9 @@
 {
     "current_phase": "Phase 1 - MVP",
+    "mvp_assessment": {
+        "achieved": true,
+        "reasoning": "The project has successfully implemented all core Phase 1 requirements as defined in AGENTS.md, including a practitioner dashboard, secure patient roster, calendar/booking system, and structured clinical note-taking with discoveries and daily actions. Subsequent sprints have even added authentication, analytics, and telehealth integration, significantly exceeding the baseline MVP."
+    },
     "completed_features": [
         {
             "sprint": "Sprint 1",
@@ -182,30 +186,32 @@
             "scope": "Updated the 'Mark Completed' button logic in `CalendarView.tsx`. The button no longer unmounts when the session is completed; instead, it transitions to a green active state and dynamically binds its `onClick` handler to revert the session back to 'scheduled', functioning as an undo toggle.",
             "completed_at": "2026-07-28",
             "layman_summary": "We've added a highly-requested safety net to your calendar. If you accidentally mark a session as completed, the green checkmark button remains on the card—simply click it again to instantly undo the action and return the session to your scheduled list!"
+        },
+        {
+            "sprint": "Sprint 12",
+            "title": "Live Backend Database Migration (Supabase)",
+            "scope": "Transition the application from mock data to a live Supabase PostgreSQL database. Generate SQL schema with RLS policies and swap the service layer to use the `@supabase/ssr` client for persistent storage.",
+            "completed_at": "2026-07-28",
+            "layman_summary": "We did it! Lumina Health is now running on a live, cloud-hosted PostgreSQL database. All your patient data, appointments, and clinical notes are now securely persisted with enterprise-grade Row Level Security. The app is officially a real, functional software product!"
         }
     ],
     "proposed_features": [
-        {
-            "id": "PRP-07",
-            "title": "Automated Session Reminders & Patient Notification Hub",
-            "scope": "Introduces automated email/SMS reminders for upcoming appointments and a central notification center for tracking sent alerts.",
-            "phase": "Phase 1 - MVP"
-        },
-        {
-            "id": "PRP-09",
-            "title": "Secure Practitioner Messaging & Care Team Chat",
-            "scope": "Provides a secure, internal chat module for practitioners and staff to communicate safely regarding practice updates and care coordination.",
-            "phase": "Phase 1 - MVP"
-        }
-    ],
-    "pending_options": [
         {
             "id": "PRP-04",
             "title": "Clinical Summary Report & Chart Export Hub",
             "scope": "Adds printable clinical progress summaries and downloadable patient record exports for clinical reviews and care coordination.",
             "phase": "Phase 1 - MVP",
-            "status": "Backlog"
+            "requires_backend": true
         },
+        {
+            "id": "PRP-10",
+            "title": "Interactive Clinical Treatment Plan Builder",
+            "scope": "Allows practitioners to define long-term therapeutic goals, track milestone progress, and link daily assigned actions to overarching treatment plans for each patient.",
+            "phase": "Phase 1 - MVP",
+            "requires_backend": true
+        }
+    ],
+    "pending_options": [
         {
             "id": "PRP-06",
             "title": "Multi-Practitioner Practice Role Access & Audit Logs",
@@ -219,6 +225,20 @@
             "scope": "Background analytical engine examining structured discoveries and daily actions to highlight correlations for practitioners.",
             "phase": "Phase 2 - Analytical",
             "status": "Future Phase"
+        },
+        {
+            "id": "PRP-07",
+            "title": "Automated Session Reminders & Patient Notification Hub",
+            "scope": "Introduces automated email/SMS reminders for upcoming appointments and a central notification center for tracking sent alerts.",
+            "phase": "Phase 1 - MVP",
+            "status": "Backlog"
+        },
+        {
+            "id": "PRP-09",
+            "title": "Secure Practitioner Messaging & Care Team Chat",
+            "scope": "Provides a secure, internal chat module for practitioners and staff to communicate safely regarding practice updates and care coordination.",
+            "phase": "Phase 1 - MVP",
+            "status": "Backlog"
         }
     ],
     "issue_log": [

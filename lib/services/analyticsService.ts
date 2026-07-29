@@ -175,25 +175,11 @@ export async function computeAnalyticsFromServices(practitionerId: string): Prom
 export async function getPractitionerAnalytics(
   practitionerId: string = 'prac-1'
 ): Promise<ServiceResponse<PractitionerAnalytics>> {
-  // Dual-mode check
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    const mockAnalytics = await computeAnalyticsFromServices(practitionerId);
-    return { data: mockAnalytics, error: null };
-  }
-
   try {
-    const supabase = createClient();
-    if (!supabase) {
-      const mockAnalytics = await computeAnalyticsFromServices(practitionerId);
-      return { data: mockAnalytics, error: null };
-    }
-
-    // Try Supabase or fallback to computed service data
-    const mockAnalytics = await computeAnalyticsFromServices(practitionerId);
-    return handleServiceResponse<PractitionerAnalytics>(mockAnalytics, null);
+    const analytics = await computeAnalyticsFromServices(practitionerId);
+    return handleServiceResponse<PractitionerAnalytics>(analytics, null);
   } catch (error) {
-    const mockAnalytics = await computeAnalyticsFromServices(practitionerId);
-    return handleServiceResponse<PractitionerAnalytics>(mockAnalytics, null);
+    return handleServiceResponse<PractitionerAnalytics>(null, error instanceof Error ? error.message : 'Failed to generate analytics');
   }
 }
 

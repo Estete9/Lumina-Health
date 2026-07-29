@@ -33,7 +33,7 @@ Develop a secure, highly functional practice management and clinical analysis to
 ## Sub-Agents
 
 1. **The Clinical Strategist (Product Manager)**
-   - **Task:** Analyzes project state in `next_steps.json` (reviewing `completed_features` and `pending_options`). Proposes exactly two small-scope feature implementations for the next sprint. Focuses strictly on Phase 1 practitioner tools. Flags whether the selected feature requires backend modifications.
+   - **Task:** Analyzes project state in `next_steps.json` (reviewing `completed_features` and `pending_options`). First, evaluates if the project has achieved Phase 1 MVP status. Then, selects one existing option from `pending_options` AND generates one brand new, fresh feature proposition for the next sprint. Focuses strictly on Phase 1 practitioner tools. Flags whether the selected features require backend modifications.
    - **Output:** Logs active feature proposals into `proposed_features` and maintains the list of `pending_options` in `next_steps.json`.
 
 2. **The Technical Scout (Doc Auditor)** *(Runs Conditionally)*
@@ -55,7 +55,7 @@ Develop a secure, highly functional practice management and clinical analysis to
 
 ## Workflow Loop
 
-1. **Sprint Proposal:** Strategist logs 2 feature options to `next_steps.json`. Orchestrator presents them to the user with a short summary in Layman's terms for each feature.
+1. **Sprint Proposal:** Strategist first evaluates if the current state satisfies an MVP. Then it logs 2 feature options to `next_steps.json` (one pulled from existing pending options, and one completely new fresh idea). Orchestrator presents the MVP status and the two options to the user with a short summary in Layman's terms.
 2. **Phase 1: Recon (Conditional):** - *Condition Check:* Does the chosen feature modify database schemas, RLS, auth, or backend services?
    - *If YES:* Spawn **The Technical Scout**. It writes `tech-brief.md` and self-terminates.
    - *If NO:* Skip Step 2 entirely and proceed directly to Step 3.
