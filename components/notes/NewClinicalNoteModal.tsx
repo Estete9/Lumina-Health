@@ -12,6 +12,7 @@ interface NewClinicalNoteModalProps {
   onClose: () => void;
   onSuccess: (newNote?: ClinicalNote) => void;
   initialPatientId?: string;
+  initialSessionDate?: string;
 }
 
 const DISCOVERY_SUGGESTIONS = [
@@ -30,11 +31,12 @@ export function NewClinicalNoteModal({
   onClose,
   onSuccess,
   initialPatientId,
+  initialSessionDate,
 }: NewClinicalNoteModalProps) {
   const [mounted, setMounted] = useState(false);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatientId, setSelectedPatientId] = useState(initialPatientId || '');
-  const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0]);
+  const [sessionDate, setSessionDate] = useState(initialSessionDate || new Date().toISOString().split('T')[0]);
   
   // Discoveries Tags
   const [discoveries, setDiscoveries] = useState<string[]>([]);
@@ -57,7 +59,8 @@ export function NewClinicalNoteModal({
     setActionInput('');
     setRawNotes('');
     setErrorMsg('');
-    setSessionDate(new Date().toISOString().split('T')[0]);
+    if (initialPatientId) setSelectedPatientId(initialPatientId);
+    setSessionDate(initialSessionDate || new Date().toISOString().split('T')[0]);
   };
 
   const handleClose = () => {

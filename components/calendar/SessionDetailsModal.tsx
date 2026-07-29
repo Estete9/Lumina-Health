@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Appointment, AppointmentStatus } from '@/lib/types';
 import { updateAppointmentStatus } from '@/lib/services/appointmentService';
-import { Calendar as CalendarIcon, Video, Copy, CheckCircle, XCircle, X } from 'lucide-react';
+import { Calendar as CalendarIcon, Video, Copy, CheckCircle, XCircle, X, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { NewClinicalNoteModal } from '@/components/notes/NewClinicalNoteModal';
 
 interface SessionDetailsModalProps {
   selectedAppointment: Appointment | null;
@@ -13,6 +14,7 @@ interface SessionDetailsModalProps {
 
 export function SessionDetailsModal({ selectedAppointment, onClose, appointments, onStatusUpdate }: SessionDetailsModalProps) {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
   const handleCopyLink = (url: string) => {
     navigator.clipboard.writeText(url);
@@ -25,6 +27,9 @@ export function SessionDetailsModal({ selectedAppointment, onClose, appointments
   const previousApt = appointments
     .filter((a) => a.patient_id === selectedAppointment.patient_id && a.status === 'completed' && new Date(a.scheduled_at) < new Date(selectedAppointment.scheduled_at))
     .sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime())[0];
+
+  const localAptDate = new Date(selectedAppointment.scheduled_at);
+  const initialDateStr = `${localAptDate.getFullYear()}-${String(localAptDate.getMonth() + 1).padStart(2, '0')}-${String(localAptDate.getDate()).padStart(2, '0')}`;
 
   return (
     <div 
@@ -74,7 +79,21 @@ export function SessionDetailsModal({ selectedAppointment, onClose, appointments
           )}
           
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-            <label className="text-xs font-semibold text-slate-500 block mb-1">Previous Session Notes</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-semibold text-slate-500">Previous Session Notes</label>
+              {(new Date(selectedAppointment.scheduled_at) < new Date() || selectedAppointment.status === 'completed') && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsNoteModalOpen(true);
+                  }}
+                  className="flex items-center gap-1 text-[10px] font-bold text-teal-600 hover:text-teal-700 bg-teal-50 hover:bg-teal-100 px-2 py-0.5 rounded transition-colors"
+                >
+                  <FileText className="w-3 h-3" />
+                  Write Note
+                </button>
+              )}
+            </div>
             <div className="text-sm text-slate-700 italic">
               {previousApt?.notes ? previousApt.notes : "No previous session notes found"}
             </div>
@@ -139,6 +158,18 @@ export function SessionDetailsModal({ selectedAppointment, onClose, appointments
           </div>
         </div>
       </div>
+      
+      {/* Note Modal scoped to this component so it stacks cleanly over or next to it */}
+      <NewClinicalNoteModal
+        isOpen={isNoteModalOpen}
+        onClose={() => setIsNoteModalOpen(false)}
+        onSuccess={() => {
+          setIsNoteModalOpen(false);
+          // Optional: You could reload or optimistically fetch notes here
+        }}
+        initialPatientId={selectedAppointment.patient_id}
+        initialSessionDate={initialDateStr}
+      />
     </div>
   );
 }

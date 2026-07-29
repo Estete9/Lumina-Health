@@ -44,14 +44,36 @@ export async function getDashboardStats(practitionerId?: string): Promise<Servic
 
   const pendingNotesCount = pastOrCompletedAppointments.filter(apt => {
     const aptDate = new Date(apt.scheduled_at);
+    const aptYear = aptDate.getFullYear();
+    const aptMonth = aptDate.getMonth();
+    const aptDay = aptDate.getDate();
+
     const hasNote = notes.some(n => {
       if (!n.session_date) return false;
-      const noteDate = new Date(n.session_date);
+      
+      let noteYear, noteMonth, noteDay;
+      
+      if (n.session_date.length === 10) {
+        // It's a strict YYYY-MM-DD string from the date picker (in-memory)
+        const parts = n.session_date.split('-');
+        noteYear = parseInt(parts[0], 10);
+        noteMonth = parseInt(parts[1], 10) - 1;
+        noteDay = parseInt(parts[2], 10);
+      } else {
+        // It's a full ISO string from Supabase (timestamptz). 
+        // Because we insert 'YYYY-MM-DD', Supabase stores it as UTC midnight.
+        // We must extract the UTC date components to get the original string back.
+        const noteDate = new Date(n.session_date);
+        noteYear = noteDate.getUTCFullYear();
+        noteMonth = noteDate.getUTCMonth();
+        noteDay = noteDate.getUTCDate();
+      }
+
       return (
         n.patient_id === apt.patient_id &&
-        noteDate.getDate() === aptDate.getDate() &&
-        noteDate.getMonth() === aptDate.getMonth() &&
-        noteDate.getFullYear() === aptDate.getFullYear()
+        noteYear === aptYear &&
+        noteMonth === aptMonth &&
+        noteDay === aptDay
       );
     });
     return !hasNote;
