@@ -121,6 +121,7 @@ export interface SearchResultItem {
   subtitle: string;
   url: string;
   badge?: string;
+  date?: string;
 }
 
 export interface AuthUser {

@@ -66,7 +66,8 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
         title: `Note: ${patientName}`,
         subtitle: snippet,
         url: `/patients/${n.patient_id}?tab=notes`,
-        badge: 'Clinical Note'
+        badge: 'Clinical Note',
+        date: new Date(n.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
       };
     });
 
@@ -88,9 +89,9 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
         id: a.id,
         type: 'appointment' as const,
         title: `${a.patient_name || 'Appointment'} - ${a.session_type}`,
-        subtitle: `${formattedDate} (${a.duration_minutes} min)`,
         url: `/calendar`,
-        badge: a.status ? a.status.charAt(0).toUpperCase() + a.status.slice(1) : undefined
+        badge: a.status ? a.status.charAt(0).toUpperCase() + a.status.slice(1) : undefined,
+        date: new Date(a.scheduled_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
       };
     });
 
@@ -139,7 +140,8 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
         title: `Note: ${patientName}`,
         subtitle: n.raw_notes ? (n.raw_notes.length > 60 ? n.raw_notes.slice(0, 60) + '...' : n.raw_notes) : 'Clinical Note',
         url: `/patients/${n.patient_id}?tab=notes`,
-        badge: 'Clinical Note'
+        badge: 'Clinical Note',
+        date: n.created_at ? new Date(n.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : undefined
       };
     });
 
@@ -147,14 +149,17 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
       id: a.id,
       type: 'appointment' as const,
       title: `${a.patient_name || 'Appointment'} - ${a.session_type}`,
-      subtitle: `${new Date(a.scheduled_at).toLocaleDateString()} (${a.duration_minutes} min)`,
+      subtitle: `${a.duration_minutes} min`,
       url: `/calendar`,
-      badge: a.status ? a.status.charAt(0).toUpperCase() + a.status.slice(1) : undefined
+      badge: a.status ? a.status.charAt(0).toUpperCase() + a.status.slice(1) : undefined,
+      date: a.scheduled_at ? new Date(a.scheduled_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : undefined
     }));
 
     const dbResults = [...dbPatients, ...dbNotes, ...dbAppointments];
-    const dbIds = new Set(dbResults.map((r) => r.id));
-    const uniqueInMemory = inMemoryResults.filter((r) => !dbIds.has(r.id));
+    const dbIds = new Set(dbResults.map((r) => String(r.id)));
+    const dbKeys = new Set(dbResults.map((r) => `${r.type}-${r.title}`));
+    
+    const uniqueInMemory = inMemoryResults.filter((r) => !dbIds.has(String(r.id)) && !dbKeys.has(`${r.type}-${r.title}`));
 
     return { data: [...dbResults, ...uniqueInMemory], error: null };
   } catch (error) {

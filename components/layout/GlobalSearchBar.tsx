@@ -128,7 +128,10 @@ export function GlobalSearchBar() {
                       <p className="text-xs font-semibold text-slate-800 group-hover:text-teal-700 transition-colors">
                         {item.title}
                       </p>
-                      <p className="text-[11px] text-slate-500">{item.subtitle}</p>
+                      <div className="flex items-center gap-1.5 text-[11px] mt-0.5">
+                        {item.date && <span className="text-slate-400 font-medium whitespace-nowrap">{item.date} •</span>}
+                        <p className="text-slate-500">{item.subtitle}</p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {item.badge && (
@@ -162,7 +165,10 @@ export function GlobalSearchBar() {
                         <Sparkles className="w-3 h-3 text-amber-500" />
                         <span>{item.title}</span>
                       </p>
-                      <p className="text-[11px] text-slate-500 line-clamp-1">{item.subtitle}</p>
+                      <div className="flex items-center gap-1.5 text-[11px] mt-0.5">
+                        {item.date && <span className="text-slate-400 font-medium whitespace-nowrap">{item.date} •</span>}
+                        <p className="text-slate-500 line-clamp-1">{item.subtitle}</p>
+                      </div>
                     </div>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-amber-600 group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
                   </button>
@@ -188,7 +194,10 @@ export function GlobalSearchBar() {
                       <p className="text-xs font-semibold text-slate-800 group-hover:text-indigo-800 transition-colors">
                         {item.title}
                       </p>
-                      <p className="text-[11px] text-slate-500">{item.subtitle}</p>
+                      <div className="flex items-center gap-1.5 text-[11px] mt-0.5">
+                        {item.date && <span className="text-slate-400 font-medium whitespace-nowrap">{item.date} •</span>}
+                        <p className="text-slate-500 line-clamp-1">{item.subtitle}</p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {item.badge && (
