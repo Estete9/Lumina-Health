@@ -1,21 +1,25 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Patient, Appointment } from '@/lib/types';
-import { createAppointment } from '@/lib/services/appointmentService';
+import { createAppointment, getAppointments } from '@/lib/services/appointmentService';
+import { getPatients } from '@/lib/services/patientService';
 import { X, Calendar as CalendarIcon, CheckCircle2, Video } from 'lucide-react';
 import { TelehealthProvider } from '@/lib/types';
 
 interface NewAppointmentModalProps {
   isOpen: boolean;
   onClose: () => void;
-  patients: Patient[];
+  patients?: Patient[];
   appointments?: Appointment[];
   defaultDate?: Date;
   onSuccess: () => void;
 }
 
-export function NewAppointmentModal({ isOpen, onClose, patients, appointments = [], defaultDate, onSuccess }: NewAppointmentModalProps) {
+export function NewAppointmentModal({ isOpen, onClose, patients = [], appointments = [], defaultDate, onSuccess }: NewAppointmentModalProps) {
+  const [internalPatients, setInternalPatients] = useState<Patient[]>([]);
+  const [internalAppointments, setInternalAppointments] = useState<Appointment[]>([]);
   const [patientId, setPatientId] = useState(patients[0]?.id || '');
   const [sessionType, setSessionType] = useState('Individual CBT');
   
@@ -34,6 +38,28 @@ export function NewAppointmentModal({ isOpen, onClose, patients, appointments = 
   const [telehealthUrl, setTelehealthUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchData = async () => {
+        const [pRes, aRes] = await Promise.all([getPatients(), getAppointments()]);
+        if (pRes.data) {
+          const patientsData = pRes.data;
+          setInternalPatients(patientsData);
+          setPatientId((prev) => prev || (patientsData[0]?.id || ''));
+        }
+        if (aRes.data) {
+          setInternalAppointments(aRes.data);
+        }
+      };
+      fetchData();
+    }
+  }, [isOpen]);
 
   // React to prop changes if modal opens with a new defaultDate
   React.useEffect(() => {
@@ -43,20 +69,20 @@ export function NewAppointmentModal({ isOpen, onClose, patients, appointments = 
     }
   }, [isOpen, defaultDate]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg('');
 
-    const selectedPatient = patients.find((p) => p.id === patientId);
+    const selectedPatient = internalPatients.find((p) => p.id === patientId);
     const patientName = selectedPatient ? `${selectedPatient.first_name} ${selectedPatient.last_name}` : 'Client Session';
     const scheduledAt = new Date(`${dateStr}T${timeStr}:00`).toISOString();
     const scheduledTime = new Date(`${dateStr}T${timeStr}:00`).getTime();
 
     // Check for conflicts
-    const hasConflict = appointments.some(apt => {
+    const hasConflict = internalAppointments.some(apt => {
       if (apt.status === 'cancelled') return false;
       const aptTime = new Date(apt.scheduled_at).getTime();
       const aptEnd = aptTime + (apt.duration_minutes * 60000);
@@ -93,9 +119,10 @@ export function NewAppointmentModal({ isOpen, onClose, patients, appointments = 
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-slate-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4" onClick={onClose}>
+      <button type="button" onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 rounded-full bg-white text-slate-600 hover:text-slate-900 shadow-md border border-slate-200 transition-all z-50 hover:scale-105" title="Close modal"><X className="w-5 h-5" /></button>
+      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl border border-slate-200" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-teal-50 text-teal-600 rounded-xl">
@@ -106,12 +133,6 @@ export function NewAppointmentModal({ isOpen, onClose, patients, appointments = 
               <p className="text-xs text-slate-500">Book a clinical appointment for your patient</p>
             </div>
           </div>
-          <button 
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
 
         {errorMsg && (
@@ -130,7 +151,7 @@ export function NewAppointmentModal({ isOpen, onClose, patients, appointments = 
               required
             >
               <option value="">-- Choose Patient --</option>
-              {patients.map((p) => (
+              {internalPatients.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.first_name} {p.last_name} ({p.primary_ailment || 'Active Patient'})
                 </option>
@@ -267,6 +288,7 @@ export function NewAppointmentModal({ isOpen, onClose, patients, appointments = 
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/Header';
 import { getSession } from '@/lib/services/authService';
 import { Plus, X, FileText, Calendar, UserPlus } from 'lucide-react';
 import { NewClinicalNoteModal } from '@/components/notes/NewClinicalNoteModal';
+import { NewAppointmentModal } from '@/components/calendar/NewAppointmentModal';
 import { AddPatientModal } from '@/components/patients/AddPatientModal';
 import { cn } from '@/lib/utils';
 
@@ -16,6 +17,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
   const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
   const isAuthPage = pathname === '/login' || pathname === '/register';
 
   useEffect(() => {
@@ -81,6 +83,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
               <button
                 onClick={() => { setIsNoteModalOpen(true); setIsFabOpen(false); }}
+                title="Create a Note"
+                aria-label="Create a Note"
                 className="flex items-center justify-center w-12 h-12 rounded-full bg-teal-50 shadow-lg border border-teal-200 hover:bg-teal-100 transition-colors text-teal-700 hover:text-teal-900"
               >
                 <FileText className="w-5 h-5" />
@@ -92,7 +96,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 Book a Session
               </div>
               <button
-                onClick={() => { router.push('/calendar?new=true'); setIsFabOpen(false); }}
+                onClick={() => { setIsAppointmentModalOpen(true); setIsFabOpen(false); }}
+                title="Book a Session"
+                aria-label="Book a Session"
                 className="flex items-center justify-center w-12 h-12 rounded-full bg-teal-50 shadow-lg border border-teal-200 hover:bg-teal-100 transition-colors text-teal-700 hover:text-teal-900"
               >
                 <Calendar className="w-5 h-5" />
@@ -105,6 +111,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
               <button
                 onClick={() => { setIsPatientModalOpen(true); setIsFabOpen(false); }}
+                title="Add a New Patient"
+                aria-label="Add a New Patient"
                 className="flex items-center justify-center w-12 h-12 rounded-full bg-teal-50 shadow-lg border border-teal-200 hover:bg-teal-100 transition-colors text-teal-700 hover:text-teal-900"
               >
                 <UserPlus className="w-5 h-5" />
@@ -121,6 +129,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* Global Modals */}
+      <NewAppointmentModal 
+        isOpen={isAppointmentModalOpen} 
+        onClose={() => setIsAppointmentModalOpen(false)} 
+        onSuccess={() => {
+          setIsAppointmentModalOpen(false);
+          window.location.reload();
+        }}
+      />
       <NewClinicalNoteModal 
         isOpen={isNoteModalOpen} 
         onClose={() => setIsNoteModalOpen(false)} 

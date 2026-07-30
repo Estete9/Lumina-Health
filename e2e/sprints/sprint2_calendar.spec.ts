@@ -9,7 +9,13 @@ test.describe('Sprint 2: Session Scheduler & Calendar E2E', () => {
     const newApptBtn = page.locator('button', { hasText: /New Appointment|Schedule Session/i });
     if (await newApptBtn.count() > 0) {
       await newApptBtn.click();
-      await expect(page.locator('body')).toContainText(/Schedule|Client/i);
+      await expect(page.locator('h2', { hasText: /Schedule Therapy Session/i })).toBeVisible();
+
+      // Verify close button dismisses modal
+      const closeBtn = page.locator('button[title="Close modal"]');
+      await expect(closeBtn).toBeVisible();
+      await closeBtn.click();
+      await expect(page.locator('h2', { hasText: /Schedule Therapy Session/i })).toHaveCount(0);
     }
   });
 
@@ -32,5 +38,23 @@ test.describe('Sprint 2: Session Scheduler & Calendar E2E', () => {
       expect(revertedTitle).toEqual(initialTitle);
     }
   });
+
+  test('should open appointment modal globally via speed dial FAB', async ({ page }) => {
+    await page.goto('/');
+    
+    // Find global speed dial FAB toggle button
+    const fabToggle = page.locator('div.fixed.bottom-8.right-8 button').last();
+    if (await fabToggle.count() > 0) {
+      await fabToggle.click();
+      
+      // Click 'Book a Session' button inside open FAB menu
+      const bookSessionBtn = page.locator('button[title="Book a Session"]').first();
+      if (await bookSessionBtn.count() > 0) {
+        await bookSessionBtn.click();
+        await expect(page.locator('h2', { hasText: /Schedule Therapy Session/i })).toBeVisible();
+      }
+    }
+  });
 });
+
 

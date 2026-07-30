@@ -273,8 +273,6 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
           setIsModalOpen(false);
           setDefaultBookingDate(undefined);
         }}
-        patients={patients}
-        appointments={appointments}
         defaultDate={defaultBookingDate}
         onSuccess={() => {
           window.location.reload();
