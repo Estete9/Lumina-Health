@@ -21,12 +21,12 @@ export default async function NotesPage() {
   const appointments = appointmentsRes.data || [];
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <div className="h-full">
       <NotesHubClient 
         notes={notes} 
         patients={patients} 
         appointments={appointments} 
       />
-    </main>
+    </div>
   );
 }

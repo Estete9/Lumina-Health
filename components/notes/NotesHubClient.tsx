@@ -35,7 +35,7 @@ export function NotesHubClient({ notes, patients, appointments }: NotesHubClient
   }, [selectedPatientId, appointments]);
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="grid grid-cols-1 md:grid-cols-5 h-[calc(100vh-8rem)] w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       {/* Left Sidebar */}
       <NotesSidebar
         patients={patients}
@@ -47,7 +47,7 @@ export function NotesHubClient({ notes, patients, appointments }: NotesHubClient
       />
 
       {/* Main Stage */}
-      <div className="flex-1 overflow-hidden bg-slate-50 flex flex-col">
+      <div className="md:col-span-4 flex flex-col h-full overflow-hidden bg-slate-50">
         {selectedPatient ? (
           <PatientClinicalTimeline
             patient={selectedPatient}

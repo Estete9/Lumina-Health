@@ -44,7 +44,7 @@ export function NotesSidebar({
   }, [patients, appointments, searchQuery]);
 
   return (
-    <div className="w-full md:w-[320px] lg:w-[360px] flex-shrink-0 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden">
+    <div className="w-full md:col-span-1 bg-white border-r border-slate-200 flex flex-col h-full overflow-hidden">
       
       {/* Search Bar */}
       <div className="p-4 border-b border-slate-200 bg-slate-50">
@@ -121,18 +121,18 @@ function PatientListItem({ patient, isSelected, onClick, isToday }: {
   return (
     <button
       onClick={onClick}
-      className={`w-full text-left p-4 border-b border-slate-100 flex items-center justify-between transition-colors ${
+      className={`w-full text-left p-4 border-b border-slate-100 flex items-center justify-between gap-2 transition-colors ${
         isSelected 
           ? (isToday ? 'bg-teal-100/50' : 'bg-slate-100') 
           : 'hover:bg-slate-50 bg-white'
       }`}
     >
-      <div>
-        <div className={`font-semibold ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>
+      <div className="min-w-0 flex-1">
+        <div className={`font-semibold truncate ${isSelected ? 'text-slate-900' : 'text-slate-700'}`}>
           {patient.first_name} {patient.last_name}
         </div>
         {patient.primary_ailment && (
-          <div className="text-xs text-slate-500 mt-0.5 truncate max-w-[200px]">
+          <div className="text-xs text-slate-500 mt-0.5 truncate">
             {patient.primary_ailment}
           </div>
         )}
