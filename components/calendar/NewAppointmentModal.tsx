@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { Patient, Appointment } from '@/lib/types';
 import { createAppointment, getAppointments } from '@/lib/services/appointmentService';
 import { getPatients } from '@/lib/services/patientService';
+import { createNote } from '@/lib/services/noteService';
 import { X, Calendar as CalendarIcon, CheckCircle2, Video } from 'lucide-react';
 import { TelehealthProvider } from '@/lib/types';
 
@@ -114,6 +115,13 @@ export function NewAppointmentModal({ isOpen, onClose, patients = [], appointmen
     if (response.error) {
       setErrorMsg(response.error);
     } else {
+      if (notes.trim()) {
+        try {
+          await createNote({ patient_id: patientId, session_date: scheduledAt, raw_notes: notes });
+        } catch (err) {
+          console.error('Failed to create clinical note:', err);
+        }
+      }
       onSuccess();
       onClose();
     }
