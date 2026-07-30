@@ -193,6 +193,13 @@
             "scope": "Transition the application from mock data to a live Supabase PostgreSQL database. Generate SQL schema with RLS policies and swap the service layer to use the `@supabase/ssr` client for persistent storage.",
             "completed_at": "2026-07-28",
             "layman_summary": "We did it! Lumina Health is now running on a live, cloud-hosted PostgreSQL database. All your patient data, appointments, and clinical notes are now securely persisted with enterprise-grade Row Level Security. The app is officially a real, functional software product!"
+        },
+        {
+            "sprint": "Sprint 13",
+            "title": "Clinical Notes Hub",
+            "scope": "Built a dedicated `/notes` page route containing a centralized, searchable feed of all clinical notes across all patients. Created `NotesHubClient.tsx` for client-side search filtering and `ClinicalNoteCard.tsx` for reusable display. Integrated the `EditClinicalNoteModal` for inline edits.",
+            "completed_at": "2026-07-29",
+            "layman_summary": "We have launched the central Clinical Notes Hub! By clicking 'Clinical Notes' in your sidebar, you now enter a beautiful, dedicated page showing a chronological feed of every session note you've ever written across all your patients. You can instantly search through them by patient name, clinical tags, or text, and edit them right from the feed."
         }
     ],
     "proposed_features": [

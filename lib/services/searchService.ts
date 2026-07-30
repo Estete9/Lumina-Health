@@ -89,6 +89,7 @@ export async function searchGlobalResources(query: string): Promise<ServiceRespo
         id: a.id,
         type: 'appointment' as const,
         title: `${a.patient_name || 'Appointment'} - ${a.session_type}`,
+        subtitle: formattedDate,
         url: `/calendar`,
         badge: a.status ? a.status.charAt(0).toUpperCase() + a.status.slice(1) : undefined,
         date: new Date(a.scheduled_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })

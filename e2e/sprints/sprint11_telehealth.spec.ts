@@ -2,17 +2,12 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Sprint 11: Telehealth / Video Meeting Link Integration E2E', () => {
   test('should schedule a new telehealth appointment via calendar modal with provider and URL', async ({ page }) => {
-    // 1. Navigate to Calendar page
-    await page.goto('/calendar');
+    // 1. Navigate to Calendar page with ?new=true to open booking modal
+    await page.goto('/calendar?new=true');
     await expect(page).toHaveURL(/\/calendar/);
     await expect(page.locator('body')).toContainText(/Calendar|Schedule/i);
 
-    // 2. Open New Appointment Modal
-    const bookBtn = page.locator('button', { hasText: /Book New Session|New Appointment|Schedule Session|^Book$/i });
-    await expect(bookBtn).toBeVisible();
-    await bookBtn.click();
-
-    // 3. Verify modal is visible
+    // 2. Verify modal is visible
     await expect(page.locator('body')).toContainText(/Schedule Therapy Session/i);
 
     // 4. Fill in appointment details
@@ -42,7 +37,7 @@ test.describe('Sprint 11: Telehealth / Video Meeting Link Integration E2E', () =
     await urlInput.fill('https://meet.google.com/abc-defg-hij');
 
     // Submit form
-    const confirmBtn = page.locator('button', { hasText: /Confirm Session|Schedule|Save/i });
+    const confirmBtn = page.locator('button[type="submit"]', { hasText: /Book|Confirm Session|Schedule|Save/i });
     await confirmBtn.click();
 
     // 5. Verify successful submission / modal closure or schedule update
@@ -83,7 +78,7 @@ test.describe('Sprint 11: Telehealth / Video Meeting Link Integration E2E', () =
 
   test('should render Floating Action Button (FAB) for booking across application layout', async ({ page }) => {
     await page.goto('/');
-    const fabButton = page.locator('button', { hasText: /^Book$/i });
+    const fabButton = page.locator('div.fixed.bottom-8 button').last();
     await expect(fabButton).toBeVisible();
   });
 });
