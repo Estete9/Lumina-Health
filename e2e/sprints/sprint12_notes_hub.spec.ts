@@ -6,9 +6,7 @@ test.describe('Sprint 12: Clinical Notes Hub Redo E2E', () => {
     await page.goto('/notes');
     await page.waitForLoadState('networkidle');
 
-    // 2. Verify Page Header & Search Input
-    await expect(page.locator('main h1')).toContainText('Clinical Notes Hub');
-    await expect(page.locator('body')).toContainText('Review and manage your clinical sessions');
+    // 2. Verify Search Input
 
     // 3. Verify search box functionality
     const searchInput = page.locator('input[placeholder*="Search by patient name"]');

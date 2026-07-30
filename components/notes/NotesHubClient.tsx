@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { ClinicalNote, Patient } from '@/lib/types';
 import { ClinicalNoteCard } from './ClinicalNoteCard';
-import { Search, SlidersHorizontal, BookOpen } from 'lucide-react';
+import { Search, BookOpen } from 'lucide-react';
 
 interface NoteData {
   note: ClinicalNote;
@@ -42,16 +42,8 @@ export function NotesHubClient({ initialNotes }: NotesHubClientProps) {
   }, [initialNotes, searchQuery]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
-            <BookOpen className="w-8 h-8 text-teal-600" />
-            Clinical Notes Hub
-          </h1>
-          <p className="text-slate-500 mt-1">Review and manage your clinical sessions and discoveries.</p>
-        </div>
-      </div>
+    <div className="w-full max-w-5xl mx-auto">
+
 
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-8 flex items-center gap-4">
         <div className="relative flex-1">
@@ -64,10 +56,7 @@ export function NotesHubClient({ initialNotes }: NotesHubClientProps) {
             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
           />
         </div>
-        <button className="p-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 flex items-center gap-2 transition-colors">
-          <SlidersHorizontal className="w-5 h-5" />
-          <span className="text-sm font-medium hidden sm:inline-block">Filter</span>
-        </button>
+
       </div>
 
       {filteredNotes.length === 0 ? (

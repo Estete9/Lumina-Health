@@ -40,7 +40,10 @@ export function ClinicalNoteCard({ note, patient }: ClinicalNoteCardProps) {
 
   return (
     <>
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md">
+      <div 
+        onClick={() => setIsEditModalOpen(true)}
+        className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all hover:shadow-md cursor-pointer"
+      >
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold shrink-0">
