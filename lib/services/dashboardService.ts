@@ -84,17 +84,53 @@ export async function getDashboardStats(practitionerId?: string): Promise<Servic
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())
     .slice(0, 5);
 
-  // Recent Notes mapping
-  const recentNotes = [...notes]
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5)
-    .map(note => {
-      const patient = patients.find(p => p.id === note.patient_id);
-      return {
-        ...note,
-        patient_name: patient ? `${patient.first_name} ${patient.last_name}` : 'Unknown Patient'
-      };
+  // Recent Notes mapping (Previous Session Notes for Today's Patients)
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const uniqueTodayPatientIds = Array.from(new Set(todayAppointments.map(a => a.patient_id)));
+  
+  const previousNotesList = [];
+
+  for (const patientId of uniqueTodayPatientIds) {
+    const patientNotes = notes.filter(n => n.patient_id === patientId);
+    
+    const pastNotes = patientNotes.filter(n => {
+      if (!n.session_date) return false;
+      
+      let noteYear, noteMonth, noteDay;
+      if (n.session_date.length === 10) {
+        const parts = n.session_date.split('-');
+        noteYear = parseInt(parts[0], 10);
+        noteMonth = parseInt(parts[1], 10) - 1;
+        noteDay = parseInt(parts[2], 10);
+      } else {
+        const noteDate = new Date(n.session_date);
+        noteYear = noteDate.getUTCFullYear();
+        noteMonth = noteDate.getUTCMonth();
+        noteDay = noteDate.getUTCDate();
+      }
+
+      const noteDateObj = new Date(noteYear, noteMonth, noteDay);
+      return noteDateObj.getTime() < startOfToday.getTime();
     });
+
+    pastNotes.sort((a, b) => {
+      const dateA = new Date(a.session_date as string).getTime();
+      const dateB = new Date(b.session_date as string).getTime();
+      return dateB - dateA;
+    });
+
+    if (pastNotes.length > 0) {
+      previousNotesList.push(pastNotes[0]);
+    }
+  }
+
+  const recentNotes = previousNotesList.map(note => {
+    const patient = patients.find(p => p.id === note.patient_id);
+    return {
+      ...note,
+      patient_name: patient ? `${patient.first_name} ${patient.last_name}` : 'Unknown Patient'
+    };
+  });
 
   return {
     data: {
