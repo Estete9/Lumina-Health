@@ -198,8 +198,15 @@
             "sprint": "Sprint 13",
             "title": "Clinical Notes Hub",
             "scope": "Built a dedicated `/notes` page route containing a centralized, searchable feed of all clinical notes across all patients. Created `NotesHubClient.tsx` for client-side search filtering and `ClinicalNoteCard.tsx` for reusable display. Integrated the `EditClinicalNoteModal` for inline edits.",
+            "completed_at": "2026-07-28",
+            "layman_summary": "We built a dedicated Clinical Notes Hub! You now have a central place to scroll through and search all of your session notes across all patients, rather than having to hunt through individual patient profiles."
+        },
+        {
+            "sprint": "Sprint 13 Polish",
+            "title": "Clinical Notes Hub Master-Detail Overhaul",
+            "scope": "Completely redesigned the Notes Hub into a Split-Pane layout. Implemented NotesSidebar for searchable patient selection, highlighting today's scheduled patients. Built PatientClinicalTimeline as the main stage to display patient vitals, a dedicated note creation button for today's sessions, and a reverse-chronological timeline of collapsible ClinicalNoteTimelineCard components.",
             "completed_at": "2026-07-29",
-            "layman_summary": "We have launched the central Clinical Notes Hub! By clicking 'Clinical Notes' in your sidebar, you now enter a beautiful, dedicated page showing a chronological feed of every session note you've ever written across all your patients. You can instantly search through them by patient name, clinical tags, or text, and edit them right from the feed."
+            "layman_summary": "We completely transformed the Clinical Notes Hub! Instead of an overwhelming feed of text, it's now a sleek, split-screen workspace. You can select any patient from the sidebar on the left, and instantly immerse yourself in their specific clinical timeline on the right, complete with collapsible notes and quick-actions."
         }
     ],
     "proposed_features": [

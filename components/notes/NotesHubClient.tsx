@@ -1,83 +1,71 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { ClinicalNote, Patient } from '@/lib/types';
-import { ClinicalNoteCard } from './ClinicalNoteCard';
-import { Search, BookOpen } from 'lucide-react';
-
-interface NoteData {
-  note: ClinicalNote;
-  patient: Patient;
-}
+import { ClinicalNote, Patient, Appointment } from '@/lib/types';
+import { NotesSidebar } from './NotesSidebar';
+import { PatientClinicalTimeline } from './PatientClinicalTimeline';
+import { BookOpen } from 'lucide-react';
 
 interface NotesHubClientProps {
-  initialNotes: NoteData[];
+  notes: ClinicalNote[];
+  patients: Patient[];
+  appointments: Appointment[];
 }
 
-export function NotesHubClient({ initialNotes }: NotesHubClientProps) {
+export function NotesHubClient({ notes, patients, appointments }: NotesHubClientProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
 
-  const filteredNotes = useMemo(() => {
-    let results = initialNotes;
+  // Derive selected patient
+  const selectedPatient = useMemo(() => {
+    if (!selectedPatientId) return null;
+    return patients.find(p => p.id === selectedPatientId) || null;
+  }, [selectedPatientId, patients]);
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      results = results.filter(({ note, patient }) => {
-        const patientName = `${patient.first_name} ${patient.last_name}`.toLowerCase();
-        
-        let inDiscoveries = false;
-        if (Array.isArray(note.discoveries)) {
-          inDiscoveries = note.discoveries.some(d => d.toLowerCase().includes(q));
-        } else if (typeof note.discoveries === 'string') {
-          inDiscoveries = note.discoveries.toLowerCase().includes(q);
-        }
+  // Derive notes for selected patient
+  const selectedPatientNotes = useMemo(() => {
+    if (!selectedPatientId) return [];
+    return notes.filter(n => n.patient_id === selectedPatientId);
+  }, [selectedPatientId, notes]);
 
-        const inRawNotes = note.raw_notes?.toLowerCase().includes(q);
-
-        return patientName.includes(q) || inDiscoveries || inRawNotes;
-      });
-    }
-
-    return results;
-  }, [initialNotes, searchQuery]);
+  // Derive appointments for selected patient
+  const selectedPatientAppointments = useMemo(() => {
+    if (!selectedPatientId) return [];
+    return appointments.filter(a => a.patient_id === selectedPatientId);
+  }, [selectedPatientId, appointments]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="flex h-[calc(100vh-8rem)] w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      {/* Left Sidebar */}
+      <NotesSidebar
+        patients={patients}
+        appointments={appointments}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        selectedPatientId={selectedPatientId}
+        onSelectPatient={setSelectedPatientId}
+      />
 
-
-      <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 mb-8 flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by patient name, discoveries, or content..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all"
+      {/* Main Stage */}
+      <div className="flex-1 overflow-hidden bg-slate-50 flex flex-col">
+        {selectedPatient ? (
+          <PatientClinicalTimeline
+            patient={selectedPatient}
+            notes={selectedPatientNotes}
+            appointments={selectedPatientAppointments}
           />
-        </div>
-
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+            <div className="w-16 h-16 bg-white rounded-2xl shadow-sm border border-slate-100 flex items-center justify-center mb-6">
+              <BookOpen className="w-8 h-8 text-teal-600" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Clinical Notes Hub</h3>
+            <p className="text-slate-500 max-w-md">
+              Select a patient from the sidebar to view their clinical timeline, review past notes, and create new session records.
+            </p>
+          </div>
+        )}
       </div>
-
-      {filteredNotes.length === 0 ? (
-        <div className="text-center py-16 bg-slate-50 rounded-2xl border border-slate-200 border-dashed">
-          <BookOpen className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-slate-900 mb-1">No notes found</h3>
-          <p className="text-slate-500 text-sm">
-            {searchQuery ? 'Try adjusting your search terms.' : 'You have not created any clinical notes yet.'}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {filteredNotes.map((data) => (
-            <ClinicalNoteCard
-              key={data.note.id}
-              note={data.note}
-              patient={data.patient}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

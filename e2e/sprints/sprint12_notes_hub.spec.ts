@@ -9,7 +9,7 @@ test.describe('Sprint 12: Clinical Notes Hub Redo E2E', () => {
     // 2. Verify Search Input
 
     // 3. Verify search box functionality
-    const searchInput = page.locator('input[placeholder*="Search by patient name"]');
+    const searchInput = page.locator('input[placeholder="Search patients..."]');
     await expect(searchInput).toBeVisible();
 
     // 4. Type a query into search box
