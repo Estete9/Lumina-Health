@@ -13,6 +13,11 @@ export async function getDashboardStats(practitionerId?: string): Promise<Servic
   ]);
 
   if (patientsRes.error || appointmentsRes.error || notesRes.error) {
+    console.error('Dashboard Stats Error Details:', {
+      patientsError: patientsRes.error,
+      appointmentsError: appointmentsRes.error,
+      notesError: notesRes.error
+    });
     return { data: null, error: 'Failed to fetch dashboard data' };
   }
 

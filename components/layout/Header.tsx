@@ -15,8 +15,23 @@ export function Header() {
 
   useEffect(() => {
     async function fetchUser() {
-      const res = await getCurrentUser();
-      if (res.data) setUser(res.data);
+      try {
+        // Add a 3-second timeout to prevent infinite hang on dev server restarts
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Session fetch timeout')), 3000)
+        );
+        
+        const res = await Promise.race([
+          getCurrentUser(),
+          timeoutPromise
+        ]) as { data: Practitioner | null; error: any };
+        
+        if (res.data) setUser(res.data);
+      } catch (e) {
+        console.error('Failed to fetch user:', e);
+        // No mock fallback anymore
+        setUser(null);
+      }
     }
     fetchUser();
   }, []);
@@ -33,8 +48,7 @@ export function Header() {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/login');
-    router.refresh();
+    window.location.href = '/login';
   };
 
   const initials = user?.name 

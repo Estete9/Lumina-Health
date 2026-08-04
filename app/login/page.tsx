@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { login } from '@/lib/services/authService';
@@ -23,8 +23,9 @@ export default function LoginPage() {
       if (response.error) {
         setError(response.error);
       } else {
-        router.push('/'); // Or dashboard
-        router.refresh(); // Refresh to get the new session state
+        // Force a hard navigation to completely clear Next.js client router cache
+        // and ensure the middleware and Server Components see the fresh auth cookies.
+        window.location.href = '/';
       }
     } catch (err: any) {
       setError(err.message || 'Failed to login');
@@ -56,7 +57,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit} action="javascript:void(0);" method="POST">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-slate-700">
                 Email address

@@ -1,25 +1,10 @@
 import { createClient } from '../supabase/client';
 import { AuthUser, LoginInput, RegisterInput, AuthSession, AuthResponseData, ServiceResponse } from '../types';
 
-const MOCK_PRACTITIONER: AuthUser = {
-  id: 'prac-1',
-  email: 'dr.vance@luminahealth.com',
-  name: 'Dr. Evelyn Vance',
-  specialty: 'Clinical Psychology',
-  clinic_name: 'Lumina Mind & Behavioral Health',
-  created_at: new Date().toISOString()
-};
-
-let currentMockUser: AuthUser = MOCK_PRACTITIONER;
-
-const getMockSession = (user: AuthUser): AuthSession => ({
-  user,
-  session_id: 'mock-session-auto',
-  access_token: 'mock-token',
-  expires_at: 9999999999
-});
 
 export const authService = {
+  _sessionPromise: null as Promise<ServiceResponse<AuthSession>> | null,
+
   async login(input: LoginInput): Promise<ServiceResponse<AuthResponseData>> {
     if (typeof window !== 'undefined') {
       window.localStorage.removeItem('lumina_explicit_logout');
@@ -27,17 +12,7 @@ export const authService = {
 
     const supabase = createClient();
     if (!supabase) {
-      const formattedName = input.email
-        ? 'Dr. ' + input.email.split('@')[0].split('.').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
-        : MOCK_PRACTITIONER.name;
-
-      currentMockUser = {
-        ...MOCK_PRACTITIONER,
-        name: formattedName,
-        email: input.email || MOCK_PRACTITIONER.email
-      };
-      const session = getMockSession(currentMockUser);
-      return { data: { user: currentMockUser, session }, error: null };
+      return { data: null, error: 'Failed to initialize Supabase client' };
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -46,17 +21,7 @@ export const authService = {
     });
 
     if (error || !data.session) {
-      const formattedName = input.email
-        ? 'Dr. ' + input.email.split('@')[0].split('.').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
-        : MOCK_PRACTITIONER.name;
-
-      currentMockUser = {
-        ...MOCK_PRACTITIONER,
-        name: formattedName,
-        email: input.email || MOCK_PRACTITIONER.email
-      };
-      const session = getMockSession(currentMockUser);
-      return { data: { user: currentMockUser, session }, error: null };
+      return { data: null, error: error?.message || 'Login failed' };
     }
 
     const { data: profile } = await supabase
@@ -68,9 +33,9 @@ export const authService = {
     const authUser: AuthUser = {
       id: profile?.id || data.user.id,
       email: profile?.email || data.user.email || input.email,
-      name: profile?.name || MOCK_PRACTITIONER.name,
-      specialty: profile?.specialty || MOCK_PRACTITIONER.specialty,
-      clinic_name: profile?.clinic_name || MOCK_PRACTITIONER.clinic_name,
+      name: profile?.name || (profile?.first_name ? `${profile.first_name} ${profile.last_name}` : null) || data.user.user_metadata?.name || input.email,
+      specialty: profile?.specialty || data.user.user_metadata?.specialty,
+      clinic_name: profile?.clinic_name,
       created_at: profile?.created_at || new Date().toISOString()
     };
 
@@ -91,15 +56,7 @@ export const authService = {
 
     const supabase = createClient();
     if (!supabase) {
-      currentMockUser = {
-        id: 'prac-mock-' + Date.now(),
-        email: input.email,
-        name: input.name,
-        specialty: input.specialty || 'Clinical Psychology',
-        created_at: new Date().toISOString()
-      };
-      const session = getMockSession(currentMockUser);
-      return { data: { user: currentMockUser, session }, error: null };
+      return { data: null, error: 'Failed to initialize Supabase client' };
     }
 
     const { data, error } = await supabase.auth.signUp({
@@ -114,15 +71,7 @@ export const authService = {
     });
 
     if (error || !data.user) {
-      currentMockUser = {
-        id: 'prac-mock-' + Date.now(),
-        email: input.email,
-        name: input.name,
-        specialty: input.specialty || 'Clinical Psychology',
-        created_at: new Date().toISOString()
-      };
-      const session = getMockSession(currentMockUser);
-      return { data: { user: currentMockUser, session }, error: null };
+      return { data: null, error: error?.message || 'Registration failed' };
     }
 
     const authUser: AuthUser = {
@@ -162,30 +111,58 @@ export const authService = {
       return { data: null, error: null };
     }
 
+    if (!this._sessionPromise) {
+      this._sessionPromise = this._getSessionInternal().finally(() => {
+        this._sessionPromise = null;
+      });
+    }
+    return this._sessionPromise;
+  },
+
+  async _getSessionInternal(): Promise<ServiceResponse<AuthSession>> {
+    if (typeof window !== 'undefined' && window.localStorage.getItem('lumina_explicit_logout') === 'true') {
+      return { data: null, error: null };
+    }
+
     const supabase = createClient();
     if (!supabase) {
-      return { data: getMockSession(currentMockUser), error: null };
+      return { data: null, error: 'Failed to initialize Supabase client' };
     }
 
-    const { data, error } = await supabase.auth.getSession();
-    if (error || !data?.session?.user) {
-      return { data: getMockSession(currentMockUser), error: null };
+    try {
+      const { data, error } = await supabase.auth.getSession();
+      if (error || !data?.session?.user) {
+        return { data: null, error: error?.message || 'No active session' };
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('practitioners')
+        .select('*')
+        .eq('id', data.session.user.id)
+        .single();
+        
+      if (profileError && profileError.code !== 'PGRST116') {
+         // Log real errors but don't fail hard if profile just doesn't exist yet
+         console.warn("Failed to fetch practitioner profile", profileError);
+      }
+
+      const authSession: AuthSession = {
+        user: {
+          id: data.session.user.id,
+          email: data.session.user.email || '',
+          name: profile?.name || (profile?.first_name ? `${profile.first_name} ${profile.last_name}` : null) || data.session.user.user_metadata?.name || data.session.user.email,
+          specialty: data.session.user.user_metadata?.specialty,
+          created_at: profile?.created_at || new Date().toISOString()
+        } as AuthUser,
+        session_id: data.session.access_token,
+        access_token: data.session.access_token,
+        expires_at: data.session.expires_at
+      };
+
+      return { data: authSession, error: null };
+    } catch (e: any) {
+      return { data: null, error: e.message || 'Session fetch failed' };
     }
-
-    const { data: profile } = await supabase
-      .from('practitioners')
-      .select('*')
-      .eq('id', data.session.user.id)
-      .single();
-
-    const authSession: AuthSession = {
-      user: (profile as AuthUser) || currentMockUser,
-      session_id: data.session.access_token,
-      access_token: data.session.access_token,
-      expires_at: data.session.expires_at
-    };
-
-    return { data: authSession, error: null };
   },
 
   async getCurrentUser(): Promise<ServiceResponse<AuthUser>> {

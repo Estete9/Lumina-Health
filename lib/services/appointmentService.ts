@@ -3,13 +3,11 @@
 import { createClient } from '../supabase/server';
 import { handleServiceResponse } from './baseService';
 import { Appointment, AppointmentStatus, CreateAppointmentInput, ServiceResponse, TelehealthProvider } from '../types';
-import { MOCK_APPOINTMENTS } from './mockData';
 
-let inMemoryAppointments: Appointment[] = [...MOCK_APPOINTMENTS];
 
 export async function getAppointments(practitionerId?: string): Promise<ServiceResponse<Appointment[]>> {
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<Appointment[]>(inMemoryAppointments, null);
+  if (!supabase) return handleServiceResponse<Appointment[]>(null, 'Failed to connect to database');
 
   // For MVP, if no practitionerId is provided and no auth session exists, we bypass the filter
   // so we can see all seeded appointments in the database.
@@ -26,15 +24,13 @@ export async function getAppointments(practitionerId?: string): Promise<ServiceR
 
   const { data, error } = await query;
 
-  if (error || !data) return handleServiceResponse<Appointment[]>(inMemoryAppointments, null);
+  if (error || !data) return handleServiceResponse<Appointment[]>(null, error?.message || 'Failed to fetch appointments');
   return handleServiceResponse<Appointment[]>(data as Appointment[], null);
 }
 
 export async function getAppointmentsByPatientId(patientId: string): Promise<ServiceResponse<Appointment[]>> {
-  const filtered = inMemoryAppointments.filter((a) => a.patient_id === patientId);
-
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<Appointment[]>(filtered, null);
+  if (!supabase) return handleServiceResponse<Appointment[]>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase
     .from('appointments')
@@ -42,7 +38,7 @@ export async function getAppointmentsByPatientId(patientId: string): Promise<Ser
     .eq('patient_id', patientId)
     .order('scheduled_at', { ascending: false });
 
-  if (error || !data) return handleServiceResponse<Appointment[]>(filtered, null);
+  if (error || !data) return handleServiceResponse<Appointment[]>(null, error?.message || 'Failed to fetch appointments');
   return handleServiceResponse<Appointment[]>(data as Appointment[], null);
 }
 
@@ -54,7 +50,7 @@ export async function createAppointment(input: CreateAppointmentInput, practitio
     const { data: { user } } = await supabase.auth.getUser();
     targetId = user?.id;
   }
-  if (!targetId) targetId = 'prac-1';
+  if (!targetId) return handleServiceResponse<Appointment>(null, 'Authentication required');
 
   const newAppt: Appointment = {
     id: `apt-${Date.now()}`,
@@ -71,9 +67,7 @@ export async function createAppointment(input: CreateAppointmentInput, practitio
     created_at: new Date().toISOString()
   };
 
-  inMemoryAppointments.unshift(newAppt);
-
-  if (!supabase) return handleServiceResponse<Appointment>(newAppt, null);
+  if (!supabase) return handleServiceResponse<Appointment>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase
     .from('appointments')
@@ -92,36 +86,13 @@ export async function createAppointment(input: CreateAppointmentInput, practitio
     .select()
     .single();
 
-  if (error || !data) return handleServiceResponse<Appointment>(newAppt, null);
+  if (error || !data) return handleServiceResponse<Appointment>(null, error?.message || 'Failed to create appointment');
   return handleServiceResponse<Appointment>(data as Appointment, null);
 }
 
 export async function updateAppointmentStatus(id: string, status: AppointmentStatus): Promise<ServiceResponse<Appointment>> {
-  const index = inMemoryAppointments.findIndex((a) => a.id === id);
-  let updatedInMemory: Appointment | null = null;
-  if (index !== -1) {
-    inMemoryAppointments[index] = {
-      ...inMemoryAppointments[index],
-      status
-    };
-    updatedInMemory = inMemoryAppointments[index];
-  } else {
-    updatedInMemory = {
-      id,
-      patient_id: 'p-101',
-      practitioner_id: 'prac-1',
-      patient_name: 'Patient',
-      scheduled_at: new Date().toISOString(),
-      duration_minutes: 50,
-      status,
-      session_type: 'Therapy Session',
-      created_at: new Date().toISOString()
-    };
-    inMemoryAppointments.unshift(updatedInMemory);
-  }
-
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<Appointment>(updatedInMemory!, null);
+  if (!supabase) return handleServiceResponse<Appointment>(null, 'Failed to connect to database');
 
   if (status === 'cancelled') {
     // Completely remove from Supabase
@@ -130,12 +101,8 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
       .delete()
       .eq('id', id);
     
-    // Remove from in-memory array
-    const index = inMemoryAppointments.findIndex((a) => a.id === id);
-    if (index !== -1) inMemoryAppointments.splice(index, 1);
-
-    if (error) return handleServiceResponse<Appointment>(updatedInMemory!, null);
-    return handleServiceResponse<Appointment>(updatedInMemory!, null);
+    if (error) return handleServiceResponse<Appointment>(null, error.message);
+    return handleServiceResponse<Appointment>(null, null as any);
   }
 
   const { data, error } = await supabase
@@ -145,7 +112,7 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
     .select()
     .single();
 
-  if (error || !data) return handleServiceResponse<Appointment>(updatedInMemory, null);
+  if (error || !data) return handleServiceResponse<Appointment>(null, error?.message || 'Failed to update appointment status');
   return handleServiceResponse<Appointment>(data as Appointment, null);
 }
 
@@ -154,22 +121,8 @@ export async function updateAppointmentTelehealth(
   telehealthUrl: string | null,
   telehealthProvider?: TelehealthProvider | null
 ): Promise<ServiceResponse<Appointment>> {
-  const index = inMemoryAppointments.findIndex((a) => a.id === id);
-  let updatedInMemory: Appointment | null = null;
-  if (index !== -1) {
-    inMemoryAppointments[index] = {
-      ...inMemoryAppointments[index],
-      telehealth_url: telehealthUrl,
-      telehealth_provider: telehealthProvider || null
-    };
-    updatedInMemory = inMemoryAppointments[index];
-  }
-
   const supabase = await createClient();
-  if (!supabase) {
-    if (updatedInMemory) return handleServiceResponse<Appointment>(updatedInMemory, null);
-    return handleServiceResponse<Appointment>(null, 'Appointment not found');
-  }
+  if (!supabase) return handleServiceResponse<Appointment>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase
     .from('appointments')
@@ -178,9 +131,6 @@ export async function updateAppointmentTelehealth(
     .select()
     .single();
 
-  if (error || !data) {
-    if (updatedInMemory) return handleServiceResponse<Appointment>(updatedInMemory, null);
-    return handleServiceResponse<Appointment>(null, error);
-  }
+  if (error || !data) return handleServiceResponse<Appointment>(null, error?.message || 'Failed to update appointment');
   return handleServiceResponse<Appointment>(data as Appointment, null);
 }

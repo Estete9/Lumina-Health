@@ -8,10 +8,8 @@ import { MOCK_CLINICAL_NOTES } from './mockData';
 let inMemoryNotes: ClinicalNote[] = [...MOCK_CLINICAL_NOTES];
 
 export async function getNotesByPatientId(patientId: string): Promise<ServiceResponse<ClinicalNote[]>> {
-  const filtered = inMemoryNotes.filter((n) => n.patient_id === patientId);
-
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<ClinicalNote[]>(filtered, null);
+  if (!supabase) return handleServiceResponse<ClinicalNote[]>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase
     .from('clinical_notes')
@@ -19,7 +17,7 @@ export async function getNotesByPatientId(patientId: string): Promise<ServiceRes
     .eq('patient_id', patientId)
     .order('created_at', { ascending: false });
 
-  if (error || !data) return handleServiceResponse<ClinicalNote[]>(filtered, null);
+  if (error || !data) return handleServiceResponse<ClinicalNote[]>(null, error?.message || 'Failed to fetch notes');
   return handleServiceResponse<ClinicalNote[]>(data as ClinicalNote[], null);
 }
 
@@ -31,7 +29,7 @@ export async function createNote(input: CreateNoteInput, practitionerId?: string
     const { data: { user } } = await supabase.auth.getUser();
     targetId = user?.id;
   }
-  if (!targetId) targetId = 'prac-1';
+  if (!targetId) return handleServiceResponse<ClinicalNote>(null, 'Authentication required');
 
   const newNote: ClinicalNote = {
     id: `note-${Date.now()}`,
@@ -46,9 +44,7 @@ export async function createNote(input: CreateNoteInput, practitionerId?: string
     updated_at: new Date().toISOString()
   };
 
-  inMemoryNotes.unshift(newNote);
-
-  if (!supabase) return handleServiceResponse<ClinicalNote>(newNote, null);
+  if (!supabase) return handleServiceResponse<ClinicalNote>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase
     .from('clinical_notes')
@@ -64,27 +60,13 @@ export async function createNote(input: CreateNoteInput, practitionerId?: string
     .select()
     .single();
 
-  if (error || !data) return handleServiceResponse<ClinicalNote>(newNote, null);
+  if (error || !data) return handleServiceResponse<ClinicalNote>(null, error?.message || 'Failed to create note');
   return handleServiceResponse<ClinicalNote>(data as ClinicalNote, null);
 }
 
 export async function updateNote(id: string, input: Partial<CreateNoteInput>): Promise<ServiceResponse<ClinicalNote>> {
-  const index = inMemoryNotes.findIndex((n) => n.id === id);
-  let updatedInMemory: ClinicalNote | null = null;
-  if (index !== -1) {
-    inMemoryNotes[index] = {
-      ...inMemoryNotes[index],
-      ...input,
-      updated_at: new Date().toISOString()
-    };
-    updatedInMemory = inMemoryNotes[index];
-  }
-
   const supabase = await createClient();
-  if (!supabase) {
-    if (updatedInMemory) return handleServiceResponse<ClinicalNote>(updatedInMemory, null);
-    return handleServiceResponse<ClinicalNote>(null, 'Note not found');
-  }
+  if (!supabase) return handleServiceResponse<ClinicalNote>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase
     .from('clinical_notes')
@@ -93,10 +75,7 @@ export async function updateNote(id: string, input: Partial<CreateNoteInput>): P
     .select()
     .single();
 
-  if (error || !data) {
-    if (updatedInMemory) return handleServiceResponse<ClinicalNote>(updatedInMemory, null);
-    return handleServiceResponse<ClinicalNote>(null, error);
-  }
+  if (error || !data) return handleServiceResponse<ClinicalNote>(null, error?.message || 'Failed to update note');
   return handleServiceResponse<ClinicalNote>(data as ClinicalNote, null);
 }
 
@@ -120,20 +99,20 @@ export async function deleteNote(id: string): Promise<ServiceResponse<boolean>> 
 
 export async function getAllNotes(): Promise<ServiceResponse<ClinicalNote[]>> {
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
+  if (!supabase) return handleServiceResponse<ClinicalNote[]>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase
     .from('clinical_notes')
     .select('*')
     .order('created_at', { ascending: false });
 
-  if (error || !data) return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
+  if (error || !data) return handleServiceResponse<ClinicalNote[]>(null, error?.message || 'Failed to fetch notes');
   return handleServiceResponse<ClinicalNote[]>(data as ClinicalNote[], null);
 }
 
 export async function getNotes(practitionerId?: string): Promise<ServiceResponse<ClinicalNote[]>> {
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
+  if (!supabase) return handleServiceResponse<ClinicalNote[]>(null, 'Failed to connect to database');
 
   let targetId = practitionerId;
   if (!targetId) {
@@ -148,6 +127,6 @@ export async function getNotes(practitionerId?: string): Promise<ServiceResponse
   }
 
   const { data, error } = await query;
-  if (error || !data) return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
+  if (error || !data) return handleServiceResponse<ClinicalNote[]>(null, error?.message || 'Failed to fetch notes');
   return handleServiceResponse<ClinicalNote[]>(data as ClinicalNote[], null);
 }
