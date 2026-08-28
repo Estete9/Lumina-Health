@@ -1,11 +1,8 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sprint 9: Practitioner Login & Registration Flow E2E', () => {
-  test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      window.localStorage.setItem('lumina_explicit_logout', 'true');
-      window.localStorage.removeItem('lumina_mock_session');
-    });
+  test.beforeEach(async ({ context }) => {
+    await context.clearCookies();
   });
 
   test('should navigate to login page and render login form inputs', async ({ page }) => {
@@ -58,10 +55,14 @@ test.describe('Sprint 9: Practitioner Login & Registration Flow E2E', () => {
 
   test('should allow navigation between login and register pages via links', async ({ page }) => {
     await page.goto('/login');
-    await page.click('a[href="/register"]');
+    const regLink = page.locator('a[href="/register"]');
+    await expect(regLink).toBeVisible();
+    await regLink.click();
     await expect(page).toHaveURL(/\/register/);
 
-    await page.click('a[href="/login"]');
+    const loginLink = page.locator('a[href="/login"]');
+    await expect(loginLink).toBeVisible();
+    await loginLink.click();
     await expect(page).toHaveURL(/\/login/);
   });
 

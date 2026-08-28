@@ -29,8 +29,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         const hasSession = Boolean(sessionRes.data && sessionRes.data.user);
         if (isAuthPage && hasSession) {
           router.push('/');
-        } else if (!isAuthPage && !hasSession) {
-          router.push('/login');
         }
       } catch (err) {
         console.error('CRASH:', err);

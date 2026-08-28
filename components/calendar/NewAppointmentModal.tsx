@@ -19,8 +19,8 @@ interface NewAppointmentModalProps {
 }
 
 export function NewAppointmentModal({ isOpen, onClose, patients = [], appointments = [], defaultDate, onSuccess }: NewAppointmentModalProps) {
-  const [internalPatients, setInternalPatients] = useState<Patient[]>([]);
-  const [internalAppointments, setInternalAppointments] = useState<Appointment[]>([]);
+  const [internalPatients, setInternalPatients] = useState<Patient[]>(patients);
+  const [internalAppointments, setInternalAppointments] = useState<Appointment[]>(appointments);
   const [patientId, setPatientId] = useState(patients[0]?.id || '');
   const [sessionType, setSessionType] = useState('Individual CBT');
   

@@ -13,11 +13,20 @@ test.describe('Sprint 11: Telehealth / Video Meeting Link Integration E2E', () =
     // 4. Fill in appointment details
     // Select patient if available
     const patientSelect = page.locator('select').first();
-    if (await patientSelect.isVisible()) {
-      const options = await patientSelect.locator('option').all();
-      if (options.length > 1) {
-        await patientSelect.selectOption({ index: 1 });
-      }
+    await patientSelect.locator('option').nth(1).waitFor({ state: 'attached', timeout: 5000 }).catch(() => {});
+    const options = await patientSelect.locator('option').all();
+    if (options.length > 1) {
+      await patientSelect.selectOption({ index: 1 });
+    }
+
+    // Set a non-conflicting future date & time
+    const dateInput = page.locator('input[type="date"]');
+    if (await dateInput.isVisible()) {
+      await dateInput.fill('2028-06-15');
+    }
+    const timeInput = page.locator('input[type="time"]');
+    if (await timeInput.isVisible()) {
+      await timeInput.fill('15:00');
     }
 
     // Toggle Telehealth switch

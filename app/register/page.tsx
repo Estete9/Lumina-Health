@@ -25,8 +25,7 @@ export default function RegisterPage() {
       if (response.error) {
         setError(response.error);
       } else {
-        router.push('/'); // Or dashboard
-        router.refresh();
+        window.location.href = '/';
       }
     } catch (err: any) {
       setError(err.message || 'Failed to register');

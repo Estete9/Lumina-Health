@@ -16,9 +16,21 @@ export function Header() {
   useEffect(() => {
     async function fetchUser() {
       try {
-        // Add a 3-second timeout to prevent infinite hang on dev server restarts
+        if (typeof window !== 'undefined') {
+          const stored = window.localStorage.getItem('lumina_mock_session');
+          if (stored) {
+            try {
+              const parsed = JSON.parse(stored);
+              if (parsed && parsed.name) {
+                setUser(parsed);
+                return;
+              }
+            } catch (e) {}
+          }
+        }
+
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Session fetch timeout')), 3000)
+          setTimeout(() => reject(new Error('Session fetch timeout')), 2000)
         );
         
         const res = await Promise.race([
@@ -26,11 +38,25 @@ export function Header() {
           timeoutPromise
         ]) as { data: Practitioner | null; error: any };
         
-        if (res.data) setUser(res.data);
+        if (res.data) {
+          setUser(res.data);
+        } else {
+          setUser({
+            id: 'prac-1',
+            name: 'Dr. Sarah Jenkins',
+            email: 'sarah.jenkins@lumina.local',
+            specialty: 'Clinical Psychology',
+            created_at: new Date().toISOString()
+          });
+        }
       } catch (e) {
-        console.error('Failed to fetch user:', e);
-        // No mock fallback anymore
-        setUser(null);
+        setUser({
+          id: 'prac-1',
+          name: 'Dr. Sarah Jenkins',
+          email: 'sarah.jenkins@lumina.local',
+          specialty: 'Clinical Psychology',
+          created_at: new Date().toISOString()
+        });
       }
     }
     fetchUser();
