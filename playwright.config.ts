@@ -22,6 +22,31 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+
+    /* Default authenticated mock session for E2E testing */
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: 'http://localhost:3000',
+          localStorage: [
+            {
+              name: 'lumina_mock_session',
+              value: JSON.stringify({
+                user: {
+                  id: 'prac-1',
+                  email: 'sarah.jenkins@lumina.local',
+                  name: 'Dr. Sarah Jenkins',
+                  specialty: 'General Practice',
+                  created_at: '2026-08-28T00:00:00.000Z'
+                },
+                session_id: 'mock-session-auto'
+              })
+            }
+          ]
+        }
+      ]
+    },
   },
 
   /* Configure projects for major browsers */
@@ -37,6 +62,9 @@ export default defineConfig({
   webServer: {
     command: 'npm run dev',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
+    env: {
+      NEXT_PUBLIC_USE_MOCK_AUTH: 'true',
+    },
   },
 });

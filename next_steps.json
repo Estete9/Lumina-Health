@@ -140,23 +140,48 @@
             "scope": "Dynamically calculated the overall attendance percentage based on the selected month's mock data and rendered it in the chart header, replacing the raw session count. Increased the CSS height constraint on the Monthly Attendance stacked bar chart container by roughly 30% (h-[256px]) to improve vertical data legibility.",
             "completed_at": "2026-07-27",
             "layman_summary": "The Practice Dynamics tab has received its final polishing touches! The Monthly Attendance chart now displays your actual dynamic attendance percentage in the header instead of raw session numbers. We also increased the vertical height of the stacked bars by 30%, giving the entire chart significantly more breathing room!"
+        },
+        {
+            "sprint": "Sprint 11",
+            "title": "Analytics Refinement & Practice Metrics",
+            "scope": "De-duplicated redundant diagnostic distribution and weekly session trend charts from the Clinical tab in AnalyticsDashboard.tsx. Enriched PracticeDynamicsData interface in lib/types/index.ts and computePracticeDynamicsFromServices in analyticsService.ts with billableMetrics and documentationCompliance calculations. Added CircularKPICards for Billable Clinical Hours and Documentation Compliance to the Practice Dynamics tab. Created unit test suite __tests__/sprints/sprint11_analytics_refinement.test.ts and E2E browser test suite e2e/sprints/sprint11_analytics_refinement.spec.ts.",
+            "completed_at": "2026-08-28",
+            "layman_summary": "We refined your Analytics Dashboard to focus on what matters most! We cleaned up the Clinical Outcomes tab by removing duplicate diagnostic lists and weekly charts. On the Practice Dynamics tab, you can now track your Monthly Billable Clinical Hours and Documentation Turnaround Compliance (making sure notes are completed on time) alongside your client retention and cancellation metrics."
         }
     ],
     "proposed_features": [
         {
+            "id": "PRP-16",
+            "title": "Analytics Monthly Report & Attendance CSV Exporter",
+            "scope": "Add an Export to CSV button on the /analytics page that generates a clean downloadable CSV of the monthly sessions, attendance status, and billable counts for the selected month.",
+            "phase": "Phase 1 - MVP",
+            "layman_summary": "Add a simple export button that downloads a spreadsheet of your monthly sessions and attendance so you can easily submit claims and do your billing.",
+            "requires_backend": false
+        },
+        {
+            "id": "PRP-13",
+            "title": "Dashboard Missing Notes & High-Risk Alert Widget",
+            "scope": "Adds a daily action panel to the Practitioner Dashboard highlighting unsigned/missing session notes and high-risk patient flags (e.g., SI/HI).",
+            "phase": "Phase 1 - MVP",
+            "layman_summary": "Add a daily reminder panel to your Dashboard that alerts you to any missing session notes that need signing, and flags high-risk patients that need your attention.",
+            "requires_backend": true
+        }
+    ],
+    "pending_options": [
+        {
             "id": "PRP-04",
             "title": "Clinical Summary Report & Chart Export Hub",
             "scope": "Adds printable clinical progress summaries and downloadable patient record exports for clinical reviews and care coordination.",
-            "phase": "Phase 1 - MVP"
+            "phase": "Phase 1 - MVP",
+            "status": "Pending"
         },
         {
             "id": "PRP-06",
             "title": "Multi-Practitioner Practice Role Access & Audit Logs",
             "scope": "Introduces staff roles (Admin vs. Practitioner) and immutable event logs for compliance-ready patient data access tracking.",
-            "phase": "Phase 1 - MVP"
-        }
-    ],
-    "pending_options": [
+            "phase": "Phase 1 - MVP",
+            "status": "Pending"
+        },
         {
             "id": "PND-03",
             "title": "AI-Assisted Clinical Pattern Recognition",

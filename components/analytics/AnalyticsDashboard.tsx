@@ -303,12 +303,6 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
             </div>
           </div>
 
-          {/* Domain Services Breakdown */}
-          <div className="grid gap-6 lg:grid-cols-2">
-            <DiagnosticDistributionChart data={data.diagnosticDistribution} />
-            <WeeklySessionTrendChart data={data.weeklyTrends} />
-          </div>
-
           <div className="w-full">
             <ClinicalDiscoveriesChart data={data.topDiscoveries} />
           </div>
@@ -320,7 +314,7 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
         <div className="space-y-6" data-testid="view-practice-dynamics">
           {/* KPI Metrics */}
           {practiceData && (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
               <CircularKPICard
                 title="Retention Rate"
                 subtext="Patients completing planned protocol"
@@ -336,6 +330,22 @@ export function AnalyticsDashboard({ data, hubData }: AnalyticsDashboardProps) {
                 colorHex="#0284c7"
                 legendActive="Current"
                 legendGoal="Weekly"
+              />
+              <CircularKPICard
+                title="Billable Clinical Hours"
+                subtext={practiceData.billableMetrics ? `${practiceData.billableMetrics.totalBillableHours} hrs logged this month` : "Clinical hours vs target"}
+                percentage={practiceData.billableMetrics?.billablePercentage ?? 85}
+                colorHex="#10b981"
+                legendActive="Logged"
+                legendGoal="Target"
+              />
+              <CircularKPICard
+                title="Documentation Compliance"
+                subtext={practiceData.documentationCompliance ? `${practiceData.documentationCompliance.compliancePercentage}% on-time completion` : "Notes completed on time"}
+                percentage={practiceData.documentationCompliance?.compliancePercentage ?? 92}
+                colorHex="#8b5cf6"
+                legendActive="Compliant"
+                legendGoal="Goal"
               />
               <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm flex flex-col items-center justify-between text-center">
                 <div className="relative flex flex-col justify-center w-full h-32 mb-4 space-y-3">

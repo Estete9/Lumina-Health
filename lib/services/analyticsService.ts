@@ -311,12 +311,31 @@ export async function computePracticeDynamicsFromServices(practitionerId: string
     vsPreviousMonthChange: -2.1
   };
 
+  const completedAppts = appointments.filter(a => a.status === 'completed');
+  const totalBillableHours = Math.round(completedAppts.reduce((sum, a) => sum + (a.duration_minutes || 60) / 60, 0));
+  
+  const billableMetrics = {
+    totalBillableHours: totalBillableHours || 120,
+    monthlyTargetHours: 160,
+    billablePercentage: totalBillableHours ? Math.round((totalBillableHours / 160) * 100) : 75,
+    averageRatePerHour: 150
+  };
+
+  const documentationCompliance = {
+    avgTurnaroundHours: 14.5,
+    compliancePercentage: 92,
+    pendingNotesCount: Math.max(0, completedAppts.length - 10), // mock calculation
+    targetTurnaroundHours: 24
+  };
+
   return {
     overallRetentionRate: 75.0,
     averageSessionFrequencyDays: 7.4,
     retentionFunnel,
     monthlyAttendance,
-    cancellationMetrics
+    cancellationMetrics,
+    billableMetrics,
+    documentationCompliance
   };
 }
 

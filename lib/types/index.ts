@@ -260,6 +260,8 @@ export interface PracticeDynamicsData {
   retentionFunnel: RetentionFunnelStage[];
   monthlyAttendance: MonthlyAttendanceTrendItem[];
   cancellationMetrics: CancellationRateMetric;
+  billableMetrics?: { totalBillableHours: number; monthlyTargetHours: number; billablePercentage: number; averageRatePerHour?: number };
+  documentationCompliance?: { avgTurnaroundHours: number; compliancePercentage: number; pendingNotesCount: number; targetTurnaroundHours: number };
 }
 
 // ==========================================

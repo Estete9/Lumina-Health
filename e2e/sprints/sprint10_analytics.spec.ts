@@ -1,6 +1,22 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.removeItem('lumina_explicit_logout');
+      window.localStorage.setItem('lumina_mock_session', JSON.stringify({
+        user: {
+          id: 'prac-1',
+          email: 'sarah.jenkins@lumina.local',
+          name: 'Dr. Sarah Jenkins',
+          specialty: 'General Practice',
+          created_at: new Date().toISOString()
+        },
+        session_id: 'mock-session-test'
+      }));
+    });
+  });
+
   test('should navigate to /analytics and render analytics header and KPI cards', async ({ page }) => {
     await page.goto('/analytics');
 
@@ -147,7 +163,7 @@ test.describe('Sprint 10: Decision-Making Clinical & Practice Analytics Hub E2E'
     await expect(page.locator('body')).toContainText(/Top Clinical Discoveries/i);
 
     // Look for Clinical Discoveries section Show All button
-    const discoveriesSection = page.locator('div', { hasText: /Top Clinical Discoveries/i }).filter({ has: page.locator('button', { hasText: /Show All/i }) });
+    const discoveriesSection = page.locator('div.rounded-xl', { has: page.getByRole('heading', { name: /Top Clinical Discoveries/i }) });
     
     // If there are more items than maxItems, the toggle button will be rendered
     const discoveriesToggle = discoveriesSection.locator('button', { hasText: /Show All/i }).first();
