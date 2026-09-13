@@ -35,7 +35,7 @@ export function NotesHubClient({ notes, patients, appointments }: NotesHubClient
   }, [selectedPatientId, appointments]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-5 h-[calc(100vh-8rem)] w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div className="grid grid-cols-1 md:grid-cols-5 h-[calc(100vh-10rem)] w-full bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       {/* Left Sidebar */}
       <NotesSidebar
         patients={patients}

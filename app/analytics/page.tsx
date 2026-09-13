@@ -1,5 +1,5 @@
 import { getPractitionerAnalytics } from '@/lib/services/analyticsService';
-import { AnalyticsView } from '@/components/analytics/AnalyticsView';
+import { PsychologyPracticeDashboard } from '@/components/analytics/PsychologyPracticeDashboard';
 
 export default async function AnalyticsPage() {
   const analyticsRes = await getPractitionerAnalytics();
@@ -16,8 +16,6 @@ export default async function AnalyticsPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto h-full overflow-y-auto bg-slate-50">
-      <AnalyticsView data={analyticsRes.data} />
-    </div>
+    <PsychologyPracticeDashboard data={analyticsRes.data} />
   );
 }

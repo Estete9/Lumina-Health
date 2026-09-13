@@ -2,6 +2,7 @@ import { Users, Calendar, Clock, AlertCircle } from 'lucide-react';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { UpcomingAppointments } from '@/components/dashboard/UpcomingAppointments';
 import { RecentNotes } from '@/components/dashboard/RecentNotes';
+import ScratchpadWidget from '@/components/dashboard/ScratchpadWidget';
 import { getDashboardStats } from '@/lib/services/dashboardService';
 
 export default async function DashboardPage() {
@@ -54,9 +55,12 @@ export default async function DashboardPage() {
       </div>
 
       {/* Dashboard Main Grid Area */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         <UpcomingAppointments appointments={stats.recentAppointments} />
         <RecentNotes notes={stats.recentNotes} />
+        <div className="lg:col-span-1">
+          <ScratchpadWidget />
+        </div>
       </div>
     </div>
   );

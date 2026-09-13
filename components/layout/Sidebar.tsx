@@ -16,6 +16,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logout } from '@/lib/services/authService';
 
 interface NavItem {
   name: string;
@@ -33,11 +34,11 @@ const navItems: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <aside className={cn(
-      "flex h-screen flex-col border-r border-slate-200 bg-slate-900 text-slate-100 transition-all duration-300 ease-in-out relative",
+      "flex h-full flex-col border-r border-slate-200 bg-slate-900 text-slate-100 transition-all duration-300 ease-in-out relative",
       isCollapsed ? "w-16" : "w-64"
     )}>
       {/* Brand Header */}
@@ -95,8 +96,12 @@ export function Sidebar() {
         </Link>
         <button
           type="button"
+          onClick={async () => {
+            await logout();
+            window.location.href = '/login';
+          }}
           title={isCollapsed ? "Sign Out" : undefined}
-          className="flex w-full items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out"
+          className="flex w-full items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out cursor-pointer"
         >
           <LogOut className="h-5 w-5 shrink-0" />
           <span className={cn("whitespace-nowrap overflow-hidden transition-all duration-300 ease-in-out", isCollapsed ? "w-0 opacity-0" : "opacity-100")}>Sign Out</span>

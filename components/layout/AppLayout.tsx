@@ -51,11 +51,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50">
+    <div className="flex h-full overflow-hidden bg-slate-50">
       <Sidebar />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 min-h-0 overflow-y-auto p-6">
           <div className="mx-auto max-w-7xl">
             <React.Suspense fallback={
               <div className="flex h-[50vh] w-full items-center justify-center">

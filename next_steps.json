@@ -214,22 +214,48 @@
             "scope": "Reset the /analytics route, components/analytics/, and analyticsService.ts to a lean foundational baseline. Removed legacy bloated/synthetic tab components and configured clean starter shell ready to build purpose-built practitioner analytics from zero.",
             "completed_at": "2026-08-28",
             "layman_summary": "We reset the Analytics section to a completely clean slate! All bloated and synthetic placeholder charts have been cleared out, leaving a clean, high-performance canvas with foundational statistics (Total Patients, Active Caseload, Total Sessions Completed, Total Notes Logged) ready to build out genuine practitioner tools."
+        },
+        {
+            "sprint": "Sprint 10 (V2 Refined)",
+            "title": "Psychology Practice Dashboard V2 (Clinical Trajectory, KPI Deltas & Expandable Alerts)",
+            "scope": "Implemented V2 of the Psychology Practice Analytics Dashboard addressing clinical review feedback. Replaced generic growth with clinical outcome trajectory (Improving/Stable/Worsening) on Overview, added trend deltas (+/-) to all 5 KPI cards, added interactive expandable 'Needs attention' dropdown alert hub, added step-by-step conversion percentages to the intake funnel, and added below-the-fold no-show rate area chart and live activity feed. Maintained strict HIPAA de-identification and dual-lens 50/50 clinical/financial balance.",
+            "layman_summary": "Your Analytics Dashboard has been enhanced with deep clinical insights! You now see clinical outcome trajectory (whether clients are improving, stable, or worsening) right on Overview, micro-trend deltas on all 5 KPI cards, an interactive 'Needs attention' dropdown with one-click access to urgent items, clear conversion % drop-offs on your intake funnel, and a live activity feed below the fold."
+        },
+        {
+            "sprint": "Sprint 11",
+            "title": "Dashboard Quick Notes & Scratchpad Widget",
+            "scope": "Implemented practitioner quick notes and scratchpad widget on the main dashboard (/), supported by typed service layer lib/services/scratchpadService.ts with CRUD operations and in-memory fallbacks. Features include category filtering (Admin, Clinical, Follow-up, Supervision), pin toggling, task completion with visual strikethrough, and deletion. Added unit test suite __tests__/sprints/sprint11_scratchpad.test.ts and E2E browser test suite e2e/sprints/sprint11_scratchpad.spec.ts.",
+            "completed_at": "2026-08-28",
+            "layman_summary": "We added a handy Quick Notes & Scratchpad widget right on your main dashboard! You can now quickly jot down reminders, clinical ideas, supervision to-dos, and administrative tasks between client sessions. You can tag notes with color-coded categories, pin important reminders to the top, check off items as you finish them, and delete old notes when done."
+        },
+        {
+            "sprint": "Sprint 14 - Layout Polish",
+            "title": "Vertical Scrolling & Page Height Overhaul",
+            "scope": "Fixed vertical scrollbars and phantom whitespace across all views (Dashboard, Analytics, Calendar, Notes Hub, Patients, and Auth). Updated root layout in globals.css, AppLayout.tsx, Sidebar.tsx, NotesHubClient.tsx, CalendarView.tsx, and PsychologyPracticeDashboard.tsx to use responsive flex-1 min-h-0 containers and exact viewport constraints.",
+            "layman_summary": "We fixed the vertical scroll issue across all pages! The application now fits cleanly within your screen without unnecessary outer scrollbars, double scrollbars, or phantom empty space at the bottom. Each section (Notes, Calendar, Analytics, and Dashboard) now stays perfectly sized to your browser window."
+        },
+        {
+            "sprint": "Sprint 15",
+            "title": "Dynamic Analytics Service & UI Integration",
+            "scope": "Rewrote lib/services/analyticsService.ts to dynamically calculate Activity Feed, Attention Items, No-Show Trend, Funnel, and Compliance using real fetched Supabase data instead of hardcoded mock arrays. Added robust empty-state fallback UI components to components/analytics/.",
+            "completed_at": "2026-09-12",
+            "layman_summary": "Your Analytics Dashboard is now directly connected to your live patient data! We replaced the placeholder charts with real-time calculations. The dashboard now dynamically generates your Activity Feed based on recent sessions, automatically flags any 'Attention Items' (like a completed session missing a clinical note), and calculates your real no-show trends. We also added sleek 'empty state' messages so the dashboard still looks beautiful even when you don't have enough data to generate a chart yet."
         }
     ],
     "proposed_features": [
         {
-            "id": "PRP-11",
-            "title": "Monthly Attendance & Cancellations Stacked Bar Breakdown",
-            "scope": "Implement an interactive stacked bar chart in the Analytics Hub tracking scheduled vs. attended vs. cancelled sessions over time to visualize practice attendance patterns.",
+            "id": "PRP-19",
+            "title": "Patient Roster Inline Quick-Add",
+            "scope": "Allow practitioners to quickly add a new patient directly from the roster view using a single inline row form, minimizing modal clicks and improving workflow speed.",
             "phase": "Phase 1 - MVP",
-            "requires_backend": false
+            "requires_backend": true
         },
         {
-            "id": "PRP-12",
-            "title": "Monthly Billable Clinical Hours & Documentation Turnaround KPI Tracker",
-            "scope": "Build KPI components tracking total billable hours and average time-to-completion for clinical notes to monitor practice efficiency and documentation compliance.",
+            "id": "PRP-20",
+            "title": "CSV Export Utility for Financial & Attendance Records",
+            "scope": "Export capability for practitioner financial and attendance records as CSV files.",
             "phase": "Phase 1 - MVP",
-            "requires_backend": false
+            "requires_backend": true
         }
     ],
     "pending_options": [
@@ -348,6 +374,16 @@
             "agent": "QA Verifier",
             "problem": "E2E Playwright tests failed with 302 redirects to /login due to newly added auth middleware lacking test session bypass, and Playwright hung on HTML report server.",
             "resolution": "Updated middleware.ts to recognize Playwright user-agent, mock cookies, and test headers; configured playwright.config.ts with list reporter."
+        },
+        {
+            "problem": "Unintended vertical scrollbars and trailing bottom empty space appeared on all pages due to rigid h-screen classes and nested container padding accumulation.",
+            "resolution": "Set html, body to h-full overflow-hidden in globals.css, updated AppLayout main container to flex-1 min-h-0 overflow-y-auto, updated Sidebar to h-full, and constrained Notes Hub and Calendar views to exact viewport boundaries."
+        },
+        {
+            "sprint": "Sprint 15",
+            "agent": "QA Verifier / Backend Architect",
+            "problem": "TypeScript compilation errors due to union mismatch for ActivityItem instances and missing required schema properties (practitioner_id and duration_minutes) in test mock fixtures.",
+            "resolution": "Refactored event extraction loop in analyticsService.ts to strictly type ActivityItem and updated mock test fixtures in sprint15_dynamic_analytics.test.ts to include the missing schema properties."
         }
     ]
 }

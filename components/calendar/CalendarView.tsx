@@ -115,7 +115,7 @@ export function CalendarView({ initialAppointments, patients }: CalendarViewProp
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] gap-4">
+    <div className="flex flex-col h-[calc(100vh-10rem)] gap-4">
 
 
       {/* Main Calendar View Container */}

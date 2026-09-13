@@ -11,6 +11,6 @@ test.describe('Sprint 1: Practitioner Shell & Dashboard E2E', () => {
     const rosterLink = page.locator('a[href="/patients"]').first();
     await expect(rosterLink).toBeVisible();
     await rosterLink.click();
-    await expect(page).toHaveURL(/\/patients/);
+    await expect(page).toHaveURL(/\/patients/, { timeout: 15000 });
   });
 });

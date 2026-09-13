@@ -52,6 +52,7 @@ Develop a secure, highly functional practice management and clinical analysis to
    - **Task:** Runs ONLY AFTER both the Backend Architect and Frontend Engineer have completed their work and self-terminated. 
    - **E2E Test Creation:** Writes the sprint's End-to-End browser test file in `e2e/sprints/` targeting the newly built UI components and pages.
    - **Verification Execution:** Conducts static type checking (`npx tsc --noEmit`) and runs automated unit tests (`npm run test`). **CRITICAL RULE:** E2E browser tests (`npm run test:e2e` / Playwright) MUST ONLY be executed for major sprint completions, breaking changes, or when explicitly requested. DO NOT run E2E tests for small changes or frontend UI polishing. Sole agent authorized to execute terminal test commands during Gate 3.
+   - **Targeted Incremental Test Re-runs:** When addressing test failures, QA Verifier must re-run ONLY the specific failing test suites or spec files (e.g., `npx jest path/to/failed.test.ts` or `npx playwright test e2e/sprints/failed.spec.ts`), rather than re-running the entire test suite from scratch, until targeted tests pass.
 
 ## Workflow Loop
 
@@ -69,7 +70,7 @@ Develop a secure, highly functional practice management and clinical analysis to
    - QA Verifier runs static checks (`npx tsc --noEmit`) and unit tests (`npm run test`).
    - **CRITICAL E2E RULE:** If this is a major sprint completion or explicitly requested by the user, QA Verifier ALSO runs E2E tests (`npm run test:e2e`). DO NOT run E2E tests for small UI tweaks, minor polish, or simple bug fixes.
    - Orchestrator waits for QA Verifier to self-terminate before announcing completion.
-   - *Failure Protocol:* If QA fails (compilation, unit, or E2E), return the error to the responsible agent. The agent has a strict maximum of **3 attempts** to fix the issue. If it fails 3 times, the Orchestrator must halt and request human intervention.
+   - *Targeted Incremental Test Re-runs:* When addressing test failures, QA Verifier must re-run ONLY the specific failing test suites or spec files using `npx playwright test --last-failed` (or `npx jest path/to/failed.test.ts`), skipping all tests that already passed. Once the failing tests pass, the QA Verifier does NOT need to re-run the full suite again.
 5. **Phase 4: State Update & Synthesis:** - Upon an explicit QA Verifier PASS, Orchestrator synthesizes results to `next_steps.json`, logging the completed features in `completed_features` and preserving remaining pending backlog options in `pending_options`.
    - **Bug Logging:** If a bug was encountered and fixed, document the exact problem and solution in the `issue_log` array.
    - **Layman's Summary:** Include a `layman_summary` key inside the `completed_features` array that explains exactly what was built using simple, non-technical language.

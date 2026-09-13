@@ -157,6 +157,88 @@ export interface AuthResponseData {
   session: AuthSession | null;
 }
 
+export type Direction = "up" | "down" | "flat";
+export type AttentionLevel = "risk" | "warn" | "info";
+export type NavKey = "overview" | "clinical" | "attendance" | "financial" | "pipeline" | "compliance";
+
+export interface ActivityItem {
+  iconName: string;
+  text: string;
+  time: string;
+  tone: 'neutral' | 'risk' | 'warn' | 'good';
+}
+
+export interface Kpi {
+  label: string;
+  value: string;
+  sub?: string;
+  delta?: string;
+  good?: boolean;
+  trend?: string;
+}
+
+export interface AttentionItem {
+  level: AttentionLevel;
+  iconName: string;
+  title: string;
+  meta: string;
+}
+
+export interface CaseloadMonth {
+  month: string;
+  improving: number;
+  stable: number;
+  worsening: number;
+}
+
+export interface ClientSparkline {
+  id: string;
+  issue: string;
+  data: number[];
+  direction: Direction;
+  client?: string;
+  measure?: string;
+  score?: number;
+  prev?: number;
+}
+
+export interface NoShowWeek {
+  week: string;
+  rate: number;
+}
+
+export interface RevenueMonth {
+  month: string;
+  insurance: number;
+  private: number;
+}
+
+export interface ArBucket {
+  bucket: string;
+  amount: number;
+}
+
+export interface FunnelStage {
+  stage: string;
+  count: number;
+  value?: number;
+  conversion?: string | null;
+}
+
+export interface ReferralSource {
+  source: string;
+  inquiries: number;
+  retained: string;
+}
+
+export interface ComplianceItem {
+  label: string;
+  pct: number;
+  note?: string;
+  task?: string;
+  progress?: number;
+}
+
 export interface PractitionerAnalytics {
   practitionerId: string;
   totalPatients: number;
@@ -164,5 +246,44 @@ export interface PractitionerAnalytics {
   totalSessionsCompleted: number;
   totalNotesCount: number;
   lastUpdated: string;
+  activity: ActivityItem[];
+  kpis: Kpi[];
+  attentionItems: AttentionItem[];
+  caseloadTrajectory: CaseloadMonth[];
+  clientSparklines: ClientSparkline[];
+  noShowTrend: NoShowWeek[];
+  revenueData: RevenueMonth[];
+  arAging: ArBucket[];
+  funnel: FunnelStage[];
+  referralSources: ReferralSource[];
+  compliance: ComplianceItem[];
+}
+
+export type ScratchpadCategory = 'admin' | 'clinical' | 'follow_up' | 'supervision';
+
+export interface ScratchpadNote {
+  id: string;
+  practitioner_id: string;
+  content: string;
+  category?: ScratchpadCategory;
+  is_pinned?: boolean;
+  is_completed?: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface CreateScratchpadInput {
+  content: string;
+  category?: ScratchpadCategory;
+  is_pinned?: boolean;
+  is_completed?: boolean;
+  practitioner_id?: string;
+}
+
+export interface UpdateScratchpadInput {
+  content?: string;
+  category?: ScratchpadCategory;
+  is_pinned?: boolean;
+  is_completed?: boolean;
 }
 
