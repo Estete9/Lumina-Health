@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { Patient, PatientStatus } from '@/lib/types';
-import { Search, UserPlus, Users, Stethoscope, Mail, Phone, ArrowRight, ShieldCheck, Tag } from 'lucide-react';
+import { Search, UserPlus, Users, Stethoscope, Mail, Phone, ArrowRight, ShieldCheck, Tag, Loader2, Plus } from 'lucide-react';
 import { AddPatientModal } from './AddPatientModal';
 import { useRouter } from 'next/navigation';
+import { createPatient } from '@/lib/services/patientService';
 
 interface PatientRosterViewProps {
   initialPatients: Patient[];
@@ -16,6 +17,41 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | PatientStatus>('all');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Inline Quick-Add State
+  const [inlineFirstName, setInlineFirstName] = useState('');
+  const [inlineLastName, setInlineLastName] = useState('');
+  const [inlineAilment, setInlineAilment] = useState('');
+  const [isSubmittingInline, setIsSubmittingInline] = useState(false);
+
+  const handleInlineSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!inlineFirstName.trim() || !inlineLastName.trim()) return;
+    
+    setIsSubmittingInline(true);
+    try {
+      const result = await createPatient({
+        first_name: inlineFirstName.trim(),
+        last_name: inlineLastName.trim(),
+        primary_ailment: inlineAilment.trim() || 'General Therapy',
+        status: 'active',
+      });
+      
+      if (result.data) {
+        setPatients((prev) => [result.data!, ...prev]);
+        setInlineFirstName('');
+        setInlineLastName('');
+        setInlineAilment('');
+        router.refresh();
+      } else {
+        console.error('CREATE PATIENT FAILED:', result.error);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmittingInline(false);
+    }
+  };
 
   useEffect(() => {
     setPatients(initialPatients);
@@ -211,13 +247,58 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
 
       {/* Patient Grid / Roster Table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        {filteredPatients.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-xs">
-            No patients match your search or selected status filter (<span className="font-semibold text-slate-700">{activeTab}</span>).
+        <div className="divide-y divide-slate-100">
+          {/* Inline Quick-Add Row */}
+          <div className="p-4 bg-slate-50/50">
+            <form onSubmit={handleInlineSubmit} className="flex flex-col md:flex-row md:items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 shrink-0 hidden md:flex">
+                <UserPlus className="w-5 h-5" />
+              </div>
+              
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  value={inlineFirstName}
+                  onChange={(e) => setInlineFirstName(e.target.value)}
+                  disabled={isSubmittingInline}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none disabled:opacity-50"
+                />
+                <input
+                  type="text"
+                  placeholder="Last Name"
+                  value={inlineLastName}
+                  onChange={(e) => setInlineLastName(e.target.value)}
+                  disabled={isSubmittingInline}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none disabled:opacity-50"
+                />
+                <input
+                  type="text"
+                  placeholder="Primary Ailment"
+                  value={inlineAilment}
+                  onChange={(e) => setInlineAilment(e.target.value)}
+                  disabled={isSubmittingInline}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none disabled:opacity-50"
+                />
+              </div>
+              
+              <button
+                type="submit"
+                disabled={isSubmittingInline || !inlineFirstName.trim() || !inlineLastName.trim()}
+                className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 h-10 md:w-auto w-full"
+              >
+                {isSubmittingInline ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                <span className="md:hidden">Add Patient</span>
+              </button>
+            </form>
           </div>
-        ) : (
-          <div className="divide-y divide-slate-100">
-            {filteredPatients.map((patient) => {
+
+          {filteredPatients.length === 0 ? (
+            <div className="p-12 text-center text-slate-500 text-xs">
+              No patients match your search or selected status filter (<span className="font-semibold text-slate-700">{activeTab}</span>).
+            </div>
+          ) : (
+            filteredPatients.map((patient) => {
               const secondaryList = Array.isArray(patient.secondary_ailments)
                 ? patient.secondary_ailments
                 : typeof patient.secondary_ailments === 'string'
@@ -275,9 +356,9 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
                   </div>
                 </div>
               );
-            })}
-          </div>
-        )}
+            })
+          )}
+        </div>
       </div>
 
       <AddPatientModal
