@@ -79,6 +79,7 @@ export async function createPatient(input: CreatePatientInput, practitionerId?: 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
+    MOCK_PATIENTS.push(mockPatient);
     return handleServiceResponse<Patient>(mockPatient, null);
   }
 
@@ -112,7 +113,10 @@ export async function updatePatient(id: string, input: Partial<CreatePatientInpu
   
   if (process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
     const mockP = MOCK_PATIENTS.find(p => p.id === id);
-    if (mockP) return handleServiceResponse<Patient>({ ...mockP, ...input } as Patient, null);
+    if (mockP) {
+      Object.assign(mockP, input);
+      return handleServiceResponse<Patient>({ ...mockP }, null);
+    }
   }
 
   if (!supabase) {
@@ -137,7 +141,10 @@ export async function updatePatientStatus(id: string, status: PatientStatus): Pr
   
   if (process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
     const mockP = MOCK_PATIENTS.find(p => p.id === id);
-    if (mockP) return handleServiceResponse<Patient>({ ...mockP, status } as Patient, null);
+    if (mockP) {
+      mockP.status = status;
+      return handleServiceResponse<Patient>({ ...mockP }, null);
+    }
   }
 
   if (!supabase) return handleServiceResponse<Patient>(null, 'Failed to connect to database');

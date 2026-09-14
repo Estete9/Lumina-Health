@@ -114,7 +114,10 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
 
   if (process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
     const mockAppt = MOCK_APPOINTMENTS.find(a => a.id === id);
-    if (mockAppt) return handleServiceResponse<Appointment>({ ...mockAppt, status }, null);
+    if (mockAppt) {
+      mockAppt.status = status;
+      return handleServiceResponse<Appointment>({ ...mockAppt }, null);
+    }
   }
 
   const { data, error } = await supabase
@@ -134,6 +137,16 @@ export async function updateAppointmentTelehealth(
   telehealthProvider?: TelehealthProvider | null
 ): Promise<ServiceResponse<Appointment>> {
   const supabase = await createClient();
+  
+  if (process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+    const mockAppt = MOCK_APPOINTMENTS.find(a => a.id === id);
+    if (mockAppt) {
+      mockAppt.telehealth_url = telehealthUrl;
+      mockAppt.telehealth_provider = telehealthProvider || null;
+      return handleServiceResponse<Appointment>({ ...mockAppt }, null);
+    }
+  }
+
   if (!supabase) return handleServiceResponse<Appointment>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase
