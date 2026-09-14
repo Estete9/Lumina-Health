@@ -160,7 +160,34 @@ export async function getPractitionerAnalytics(
       p => p.status === 'active' && !scheduledPatientIds.has(p.id)
     );
 
-    const attentionItems: AttentionItem[] = [
+    // Find patients with upcoming scheduled appointments who are missing demographics
+    const missingDemographicsPatients = patients.filter(p => {
+      // Must have an upcoming scheduled appointment
+      if (!scheduledPatientIds.has(p.id)) return false;
+      
+      // Missing at least one key demographic
+      const isMissingEmail = !p.email || p.email.trim() === '';
+      const isMissingPhone = !p.phone || p.phone.trim() === '';
+      const isMissingDob = !p.date_of_birth || p.date_of_birth.trim() === '';
+      const isMissingGender = !p.gender || p.gender.trim() === '';
+      
+      return isMissingEmail || isMissingPhone || isMissingDob || isMissingGender;
+    });
+
+    const attentionItems: AttentionItem[] = [];
+
+    // Add new Missing Intake Paperwork risk item if applicable
+    if (missingDemographicsPatients.length > 0) {
+      attentionItems.push({
+        level: 'risk',
+        iconName: 'AlertTriangle',
+        title: 'Missing Intake Paperwork',
+        meta: `${missingDemographicsPatients.length} scheduled client${missingDemographicsPatients.length === 1 ? '' : 's'} missing demographics`
+      });
+    }
+
+    // Push existing attention items below
+    attentionItems.push(
       { 
         level: 'risk', 
         iconName: 'AlertTriangle', 
@@ -189,7 +216,7 @@ export async function getPractitionerAnalytics(
         title: 'Stuck claims', 
         meta: '1 clearinghouse claim rejected' 
       }
-    ];
+    );
 
     // 3. Dynamic 8-Week No-Show Trend
     const noShowTrend: NoShowWeek[] = [];

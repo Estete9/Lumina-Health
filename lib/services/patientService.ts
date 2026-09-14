@@ -7,7 +7,9 @@ import { MOCK_PATIENTS } from './mockData';
 
 export async function getPatients(practitionerId?: string): Promise<ServiceResponse<Patient[]>> {
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<Patient[]>(MOCK_PATIENTS, null);
+  if (!supabase || process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+    return handleServiceResponse<Patient[]>(MOCK_PATIENTS, null);
+  }
 
   let targetId = practitionerId;
   if (!targetId) {
@@ -28,7 +30,9 @@ export async function getPatients(practitionerId?: string): Promise<ServiceRespo
 
 export async function getPatientById(id: string): Promise<ServiceResponse<Patient>> {
   const supabase = await createClient();
-  if (!supabase) {
+  if (!supabase || process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+    const mockP = MOCK_PATIENTS.find(p => p.id === id);
+    if (mockP) return handleServiceResponse<Patient>(mockP, null);
     return handleServiceResponse<Patient>(null, 'Failed to connect to database');
   }
 
@@ -56,8 +60,8 @@ export async function createPatient(input: CreatePatientInput, practitionerId?: 
     targetId = 'prac-1';
   }
 
-  // Bypass for E2E tests
-  if (targetId === 'prac-1' || process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+  // Bypass for E2E tests (but not Jest unit tests)
+  if ((targetId === 'prac-1' || process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') && process.env.NODE_ENV !== 'test') {
     const mockPatient: Patient = {
       id: `pat-${Date.now()}`,
       practitioner_id: targetId,
@@ -105,6 +109,12 @@ export async function createPatient(input: CreatePatientInput, practitionerId?: 
 
 export async function updatePatient(id: string, input: Partial<CreatePatientInput>): Promise<ServiceResponse<Patient>> {
   const supabase = await createClient();
+  
+  if (process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+    const mockP = MOCK_PATIENTS.find(p => p.id === id);
+    if (mockP) return handleServiceResponse<Patient>({ ...mockP, ...input } as Patient, null);
+  }
+
   if (!supabase) {
     return handleServiceResponse<Patient>(null, 'Failed to connect to database');
   }
@@ -124,6 +134,12 @@ export async function updatePatient(id: string, input: Partial<CreatePatientInpu
 
 export async function updatePatientStatus(id: string, status: PatientStatus): Promise<ServiceResponse<Patient>> {
   const supabase = await createClient();
+  
+  if (process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+    const mockP = MOCK_PATIENTS.find(p => p.id === id);
+    if (mockP) return handleServiceResponse<Patient>({ ...mockP, status } as Patient, null);
+  }
+
   if (!supabase) return handleServiceResponse<Patient>(null, 'Failed to connect to database');
 
   const { data, error } = await supabase

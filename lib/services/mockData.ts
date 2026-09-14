@@ -240,6 +240,21 @@ export const MOCK_PATIENTS: Patient[] = [
     notes_summary: 'Ongoing therapy notes for Adjustment Disorder.',
     created_at: getRelativeDateISO(-180),
     updated_at: getRelativeDateISO(-2)
+  },
+  {
+    id: 'p-16',
+    practitioner_id: 'prac-1',
+    first_name: 'Incomplete',
+    last_name: 'Patient',
+    email: '',
+    phone: '',
+    date_of_birth: '',
+    gender: '',
+    status: 'active',
+    primary_ailment: 'Anxiety',
+    notes_summary: null,
+    created_at: getRelativeDateISO(-1),
+    updated_at: getRelativeDateISO(-1)
   }
 ];
 
@@ -1574,6 +1589,20 @@ export const MOCK_APPOINTMENTS: Appointment[] = [
     telehealth_provider: 'meet',
     created_at: getRelativeDateISO(-41, 13, 0)
   },
+  {
+    id: 'apt-101',
+    patient_id: 'p-16',
+    practitioner_id: 'prac-1',
+    patient_name: 'Incomplete Patient',
+    scheduled_at: getRelativeDateISO(10, 10, 0), // 10 days in the future
+    duration_minutes: 50,
+    status: 'scheduled',
+    session_type: 'Individual Therapy',
+    notes: 'Initial intake session.',
+    telehealth_url: 'https://meet.google.com/lum-health-incomplete',
+    telehealth_provider: 'meet',
+    created_at: getRelativeDateISO(-1, 10, 0)
+  }
 ];
 
 export const MOCK_CLINICAL_NOTES: ClinicalNote[] = [

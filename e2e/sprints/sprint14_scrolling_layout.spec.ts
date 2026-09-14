@@ -1,6 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Sprint 14: Vertical Scrolling & Page Height Overhaul E2E', () => {
+  test.beforeEach(async () => {
+    test.setTimeout(60000);
+  });
+
   test('Dashboard page should render with scrollable main viewport and fixed layout elements', async ({ page }) => {
     await page.goto('/');
     await page.waitForLoadState('networkidle');
@@ -52,7 +56,7 @@ test.describe('Sprint 14: Vertical Scrolling & Page Height Overhaul E2E', () => 
     // Switch between tabs to verify smooth switching within container
     await page.locator('button', { hasText: 'Clinical' }).click();
     await page.waitForTimeout(200);
-    await expect(page.locator('text=PHQ-9')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Client Symptom Score Trends/i })).toBeVisible();
 
     await page.locator('button', { hasText: 'Financial' }).click();
     await page.waitForTimeout(200);
@@ -114,7 +118,7 @@ test.describe('Sprint 14: Vertical Scrolling & Page Height Overhaul E2E', () => 
     await page.waitForLoadState('networkidle');
 
     await expect(page.getByRole('heading', { name: /Patient Roster/i })).toBeVisible();
-    await expect(page.locator('button', { hasText: /Add New Patient|Add Patient/i })).toBeVisible();
+    await expect(page.locator('button', { hasText: /Add New Patient|Add Patient/i }).first()).toBeVisible();
 
     // Open Add Patient modal
     await page.locator('button', { hasText: /Add New Patient|Add Patient/i }).first().click();

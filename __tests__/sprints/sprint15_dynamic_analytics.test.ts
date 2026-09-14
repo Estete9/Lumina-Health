@@ -101,6 +101,33 @@ describe('Sprint 15 Dynamic Analytics Service', () => {
     expect(overdue!.meta).toContain('1 unsigned clinical note');
   });
 
+  it('computes Missing Intake Paperwork risk correctly', async () => {
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 2);
+
+    const patients: Patient[] = [
+      { id: 'p1', practitioner_id: 'prac-1', first_name: 'John', last_name: 'Doe', status: 'active', email: 'john@example.com', created_at: new Date().toISOString(), updated_at: new Date().toISOString() }, // Missing phone, dob, gender
+      { id: 'p2', practitioner_id: 'prac-1', first_name: 'Jane', last_name: 'Smith', status: 'active', email: 'jane@example.com', phone: '555-1234', date_of_birth: '1990-01-01', gender: 'Female', created_at: new Date().toISOString(), updated_at: new Date().toISOString() } // Complete demographics
+    ];
+    
+    const appointments: Appointment[] = [
+      { id: 'a1', practitioner_id: 'prac-1', patient_id: 'p1', scheduled_at: futureDate.toISOString(), duration_minutes: 50, status: 'scheduled', created_at: new Date().toISOString() },
+      { id: 'a2', practitioner_id: 'prac-1', patient_id: 'p2', scheduled_at: futureDate.toISOString(), duration_minutes: 50, status: 'scheduled', created_at: new Date().toISOString() }
+    ];
+
+    mockedPatientService.getPatients.mockResolvedValue({ data: patients, error: null });
+    mockedAppointmentService.getAppointments.mockResolvedValue({ data: appointments, error: null });
+    mockedNoteService.getNotes.mockResolvedValue({ data: [], error: null });
+
+    const res = await getPractitionerAnalytics();
+    
+    const missingIntake = res.data!.attentionItems.find(i => i.title === 'Missing Intake Paperwork');
+    
+    expect(missingIntake).toBeDefined();
+    expect(missingIntake!.level).toBe('risk');
+    expect(missingIntake!.meta).toContain('1 scheduled client missing demographics');
+  });
+
   it('computes No-Show Trend Bucketing correctly', async () => {
     const appointments: Appointment[] = [];
     

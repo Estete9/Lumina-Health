@@ -9,12 +9,14 @@ test.describe('Sprint 16: Inline Quick-Add Patient E2E', () => {
     const firstName = `TestFirst${uniqueId}`;
     const lastName = `TestLast${uniqueId}`;
     const ailment = `Ailment${uniqueId}`;
+    const phoneNumber = `555-01${uniqueId}`;
 
     await page.goto('/patients');
 
     // Fill in the inline form
     await page.getByPlaceholder('First Name', { exact: true }).fill(firstName);
     await page.getByPlaceholder('Last Name', { exact: true }).fill(lastName);
+    await page.getByPlaceholder('Phone Number', { exact: true }).fill(phoneNumber);
     await page.getByPlaceholder('Primary Ailment', { exact: true }).fill(ailment);
 
     // The add button might be found by text "Add Patient" or by its type="submit" in the form
@@ -29,6 +31,7 @@ test.describe('Sprint 16: Inline Quick-Add Patient E2E', () => {
     // Verify the inputs are cleared after submission
     await expect(page.getByPlaceholder('First Name', { exact: true })).toHaveValue('');
     await expect(page.getByPlaceholder('Last Name', { exact: true })).toHaveValue('');
+    await expect(page.getByPlaceholder('Phone Number', { exact: true })).toHaveValue('');
     await expect(page.getByPlaceholder('Primary Ailment', { exact: true })).toHaveValue('');
   });
 });

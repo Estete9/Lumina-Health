@@ -3,11 +3,12 @@
 import { createClient } from '../supabase/server';
 import { handleServiceResponse } from './baseService';
 import { Appointment, AppointmentStatus, CreateAppointmentInput, ServiceResponse, TelehealthProvider } from '../types';
-
-
+import { MOCK_APPOINTMENTS } from './mockData';
 export async function getAppointments(practitionerId?: string): Promise<ServiceResponse<Appointment[]>> {
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<Appointment[]>(null, 'Failed to connect to database');
+  if (!supabase || process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+    return handleServiceResponse<Appointment[]>(MOCK_APPOINTMENTS, null);
+  }
 
   // For MVP, if no practitionerId is provided and no auth session exists, we bypass the filter
   // so we can see all seeded appointments in the database.
@@ -96,6 +97,10 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
   const supabase = await createClient();
   if (!supabase) return handleServiceResponse<Appointment>(null, 'Failed to connect to database');
 
+  if (process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true' && status === 'cancelled') {
+    return handleServiceResponse<Appointment>(null, null as any);
+  }
+
   if (status === 'cancelled') {
     // Completely remove from Supabase
     const { error } = await supabase
@@ -105,6 +110,11 @@ export async function updateAppointmentStatus(id: string, status: AppointmentSta
     
     if (error) return handleServiceResponse<Appointment>(null, error.message);
     return handleServiceResponse<Appointment>(null, null as any);
+  }
+
+  if (process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+    const mockAppt = MOCK_APPOINTMENTS.find(a => a.id === id);
+    if (mockAppt) return handleServiceResponse<Appointment>({ ...mockAppt, status }, null);
   }
 
   const { data, error } = await supabase

@@ -21,6 +21,7 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
   // Inline Quick-Add State
   const [inlineFirstName, setInlineFirstName] = useState('');
   const [inlineLastName, setInlineLastName] = useState('');
+  const [inlinePhone, setInlinePhone] = useState('');
   const [inlineAilment, setInlineAilment] = useState('');
   const [isSubmittingInline, setIsSubmittingInline] = useState(false);
 
@@ -33,6 +34,7 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
       const result = await createPatient({
         first_name: inlineFirstName.trim(),
         last_name: inlineLastName.trim(),
+        phone: inlinePhone.trim() || undefined,
         primary_ailment: inlineAilment.trim() || 'General Therapy',
         status: 'active',
       });
@@ -41,6 +43,7 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
         setPatients((prev) => [result.data!, ...prev]);
         setInlineFirstName('');
         setInlineLastName('');
+        setInlinePhone('');
         setInlineAilment('');
         router.refresh();
       } else {
@@ -255,7 +258,7 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
                 <UserPlus className="w-5 h-5" />
               </div>
               
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
                 <input
                   type="text"
                   placeholder="First Name"
@@ -269,6 +272,14 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
                   placeholder="Last Name"
                   value={inlineLastName}
                   onChange={(e) => setInlineLastName(e.target.value)}
+                  disabled={isSubmittingInline}
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none disabled:opacity-50"
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={inlinePhone}
+                  onChange={(e) => setInlinePhone(e.target.value)}
                   disabled={isSubmittingInline}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none disabled:opacity-50"
                 />

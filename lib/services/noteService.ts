@@ -112,7 +112,9 @@ export async function getAllNotes(): Promise<ServiceResponse<ClinicalNote[]>> {
 
 export async function getNotes(practitionerId?: string): Promise<ServiceResponse<ClinicalNote[]>> {
   const supabase = await createClient();
-  if (!supabase) return handleServiceResponse<ClinicalNote[]>(null, 'Failed to connect to database');
+  if (!supabase || process.env.NEXT_PUBLIC_USE_MOCK_DB === 'true') {
+    return handleServiceResponse<ClinicalNote[]>(inMemoryNotes, null);
+  }
 
   let targetId = practitionerId;
   if (!targetId) {

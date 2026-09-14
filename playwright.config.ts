@@ -42,5 +42,8 @@ export default defineConfig({
     command: 'npm run dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
+    env: {
+      NEXT_PUBLIC_USE_MOCK_DB: 'true'
+    }
   },
 });
