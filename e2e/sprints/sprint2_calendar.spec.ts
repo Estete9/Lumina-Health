@@ -26,16 +26,16 @@ test.describe('Sprint 2: Session Scheduler & Calendar E2E', () => {
     const toggleBtn = page.locator('button[title="Mark Completed"], button[title="Undo Completion"]').first();
     if (await toggleBtn.count() > 0) {
       const initialTitle = await toggleBtn.getAttribute('title');
+      const expectedNewTitle = initialTitle === 'Mark Completed' ? 'Undo Completion' : 'Mark Completed';
+
       await toggleBtn.click();
       
-      // Verify that after click, the title toggles to the opposite action
-      const newTitle = await toggleBtn.getAttribute('title');
-      expect(newTitle).not.toEqual(initialTitle);
+      // Wait for the title to toggle to the opposite action
+      await expect(toggleBtn).toHaveAttribute('title', expectedNewTitle);
 
       // Click again to undo / revert status
       await toggleBtn.click();
-      const revertedTitle = await toggleBtn.getAttribute('title');
-      expect(revertedTitle).toEqual(initialTitle);
+      await expect(toggleBtn).toHaveAttribute('title', initialTitle ?? '');
     }
   });
 

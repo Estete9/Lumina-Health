@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Patient, PatientStatus } from '@/lib/types';
-import { Search, UserPlus, Users, Stethoscope, Mail, Phone, ArrowRight, ShieldCheck, Tag, Loader2, Plus } from 'lucide-react';
+import { Search, UserPlus, Users, Stethoscope, Mail, Phone, ArrowRight, ShieldCheck, Tag, Loader2, Plus, Calendar } from 'lucide-react';
 import { AddPatientModal } from './AddPatientModal';
 import { useRouter } from 'next/navigation';
 import { createPatient } from '@/lib/services/patientService';
+import { createAppointment } from '@/lib/services/appointmentService';
 
 interface PatientRosterViewProps {
   initialPatients: Patient[];
@@ -23,7 +24,9 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
   const [inlineLastName, setInlineLastName] = useState('');
   const [inlinePhone, setInlinePhone] = useState('');
   const [inlineAilment, setInlineAilment] = useState('');
+  const [inlineAppointmentDate, setInlineAppointmentDate] = useState('');
   const [isSubmittingInline, setIsSubmittingInline] = useState(false);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   const handleInlineSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -40,11 +43,24 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
       });
       
       if (result.data) {
+        if (inlineAppointmentDate) {
+          try {
+            await createAppointment({
+              patient_id: result.data.id,
+              scheduled_at: new Date(inlineAppointmentDate).toISOString(),
+              duration_minutes: 50
+            });
+          } catch (apptErr) {
+            console.error('CREATE APPOINTMENT FAILED:', apptErr);
+          }
+        }
+        
         setPatients((prev) => [result.data!, ...prev]);
         setInlineFirstName('');
         setInlineLastName('');
         setInlinePhone('');
         setInlineAilment('');
+        setInlineAppointmentDate('');
         router.refresh();
       } else {
         console.error('CREATE PATIENT FAILED:', result.error);
@@ -258,7 +274,7 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
                 <UserPlus className="w-5 h-5" />
               </div>
               
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="flex-1 grid grid-cols-1 md:grid-cols-5 gap-3">
                 <input
                   type="text"
                   placeholder="First Name"
@@ -291,16 +307,45 @@ export function PatientRosterView({ initialPatients }: PatientRosterViewProps) {
                   disabled={isSubmittingInline}
                   className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none disabled:opacity-50"
                 />
+                <div className="relative w-full">
+                  <button
+                    type="button"
+                    onClick={() => dateInputRef.current?.showPicker()}
+                    disabled={isSubmittingInline}
+                    className={`w-full h-full rounded-xl border border-slate-300 px-3 py-2 text-sm flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors ${isSubmittingInline ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <Calendar className="w-4 h-4 shrink-0 text-slate-500" />
+                    <span className="truncate whitespace-nowrap">
+                      {inlineAppointmentDate 
+                        ? new Date(inlineAppointmentDate).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
+                        : 'Schedule Session'}
+                    </span>
+                  </button>
+                  <input
+                    ref={dateInputRef}
+                    type="datetime-local"
+                    dir="rtl"
+                    value={inlineAppointmentDate}
+                    onChange={(e) => setInlineAppointmentDate(e.target.value)}
+                    disabled={isSubmittingInline}
+                    className="w-0 h-0 opacity-0 absolute"
+                  />
+                </div>
               </div>
               
-              <button
-                type="submit"
-                disabled={isSubmittingInline || !inlineFirstName.trim() || !inlineLastName.trim()}
-                className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0 h-10 md:w-auto w-full"
+              <div 
+                className="shrink-0 w-full md:w-auto"
+                title={!inlineAppointmentDate ? "Please select a session date" : undefined}
               >
-                {isSubmittingInline ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                <span className="md:hidden">Add Patient</span>
-              </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingInline || !inlineFirstName.trim() || !inlineLastName.trim() || !inlineAppointmentDate}
+                  className="flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full h-10"
+                >
+                  {isSubmittingInline ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  <span className="md:hidden">Add Patient</span>
+                </button>
+              </div>
             </form>
           </div>
 

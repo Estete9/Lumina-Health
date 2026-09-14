@@ -254,6 +254,20 @@
             "scope": "Added phone number input to Patient Roster inline quick-add row. Upgraded analyticsService.ts to cross-reference patients missing critical demographic data against upcoming scheduled appointments, triggering a 'Missing Intake Paperwork' risk alert. Built full in-memory mutation bypass for Playwright E2E test reliability.",
             "completed_at": "2026-09-14",
             "layman_summary": "We've upgraded your quick-add workflow! You can now capture a client's phone number right from the inline row. More importantly, we built a smart safety net: if you quickly add a 'shell' patient and schedule them for a session, your Analytics Dashboard will automatically cross-reference the calendar and throw a red 'Missing Intake Paperwork' alert to nag you into completing their profile before the session begins."
+        },
+        {
+            "sprint": "Sprint 17 Polish",
+            "title": "Quick-Add Date Picker UI Fixes",
+            "scope": "Refactored the raw datetime-local input into a styled relative button wrapper with a Calendar icon. Applied dir='rtl' to the underlying opacity-0 input to natively force Chromium/Webkit to render the popup expanding to the left, preventing edge-cropping.",
+            "completed_at": "2026-09-14",
+            "layman_summary": "We fixed the date picker clipping off the side of the screen! It's now a beautiful, clear 'Schedule Session' button, and when you click it, the calendar perfectly drops down to the left so it stays entirely on your screen."
+        },
+        {
+            "sprint": "Sprint 17 Polish 2",
+            "title": "Enforce Quick-Add Scheduling",
+            "scope": "Refactored the custom date picker button to utilize the HTMLInputElement.showPicker() API via a React ref to guarantee consistent native behavior. Enforced scheduling by disabling the form submit button and displaying a native tooltip if the date is empty.",
+            "completed_at": "2026-09-14",
+            "layman_summary": "Your Quick-Add is now fully bulletproof! Clicking the calendar button will reliably open the date picker every time, and the system will actively prevent you from adding a patient until you've selected their first session date, showing a helpful tooltip if you forget."
         }
     ],
     "proposed_features": [],

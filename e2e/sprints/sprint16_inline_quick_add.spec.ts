@@ -18,6 +18,9 @@ test.describe('Sprint 16: Inline Quick-Add Patient E2E', () => {
     await page.getByPlaceholder('Last Name', { exact: true }).fill(lastName);
     await page.getByPlaceholder('Phone Number', { exact: true }).fill(phoneNumber);
     await page.getByPlaceholder('Primary Ailment', { exact: true }).fill(ailment);
+    
+    // Select an initial appointment date
+    await page.locator('input[type="datetime-local"]').fill('2026-10-15T10:00', { force: true });
 
     // The add button might be found by text "Add Patient" or by its type="submit" in the form
     // Let's use the text or the placeholder container
@@ -33,5 +36,6 @@ test.describe('Sprint 16: Inline Quick-Add Patient E2E', () => {
     await expect(page.getByPlaceholder('Last Name', { exact: true })).toHaveValue('');
     await expect(page.getByPlaceholder('Phone Number', { exact: true })).toHaveValue('');
     await expect(page.getByPlaceholder('Primary Ailment', { exact: true })).toHaveValue('');
+    await expect(page.locator('input[type="datetime-local"]')).toHaveValue('');
   });
 });
